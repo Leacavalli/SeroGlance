@@ -1,6 +1,6 @@
 # seroGlance
 
-A quick look at multiplex serology data processed with [SerolyzeR](https://cran.r-project.org/package=SerolyzeR): density plots, antigen correlations, a sample × antigen heatmap, and boxplots by metadata variables such as age, sex, site or collection date.
+A quick, model-free look at multiplex serology data processed with [SerolyzeR](https://cran.r-project.org/package=SerolyzeR): density plots, antigen correlations, a sample × antigen heatmap, and boxplots by metadata variables such as age, sex, site or collection date.
 
 **Open the tool:** https://leacavalli.github.io/SeroGlance/
 
