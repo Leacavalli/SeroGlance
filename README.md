@@ -8,7 +8,7 @@ No installation and no account are needed. The page opens with simulated example
 
 ## Background
 
-seroGlance was originally developed in the context of the [xSTAR project](https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses), which uses a specific multiplex bead assay described in [A multiplex serological assay for quantification of arbovirus antibody kinetics and neutralizing antibodies](https://doi.org/10.1371/journal.pntd.0013704) (*PLOS Neglected Tropical Diseases*). It works with SerolyzeR output from any multiplex assay. Antigens are grouped into families by the text before the first `_` in their names (e.g. `MAL_`, `ARB_`).
+seroGlance was originally developed in the context of the [xSTAR project](https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses), which uses a specific multiplex bead assay described in [A Multiplex Serological Assay for the Detection of Antibody Responses to Arboviruses](10.3791/69259). It works with SerolyzeR output from any multiplex assay. Antigens are grouped into families by the text before the first `_` in their names (e.g. `MAL_`, `ARB_`).
 
 ## Data quality: filter upstream
 
