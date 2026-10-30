@@ -4,15 +4,13 @@ A quick look at multiplex serology data processed with [SerolyzeR](https://cran.
 
 **Open the tool:** https://leacavalli.github.io/SeroGlance/
 
-No installation and no account are needed. The page opens with simulated example data until you load your own files.
-
 ## Background
 
 seroGlance was originally developed in the context of the [xSTAR project](https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses), which uses a specific multiplex bead assay described in [A Multiplex Serological Assay for the Detection of Antibody Responses to Arboviruses](10.3791/69259). It works with SerolyzeR output from any multiplex assay. Antigens are grouped into families by the text before the first `_` in their names (e.g. `MAL_`, `ARB_`).
 
 ## Data quality: filter upstream
 
-**seroGlance does not filter your data.** Apart from leaving out standards, blanks, controls and empty wells by default, it plots every value in the files you load.
+**seroGlance does not filter your data.** Apart from leaving out standards, blanks, controls and empty wells flagged in the SerolyzeR output by default, it plots every value in the files you load.
 
 Quality filtering is meant to happen upstream: remove low-quality test samples (for example wells with low bead counts or failed runs) and unreliable antigens from the SerolyzeR outputs before loading them. SerolyzeR itself does not remove low-count wells.
 
