@@ -2,15 +2,15 @@
 
 # seroGlance
 
-A quick look at multiplex serology data processed with [SerolyzeR](https://cran.r-project.org/package=SerolyzeR): density plots, antigen correlations, a sample × antigen heatmap, and boxplots by metadata variables such as age, sex, site or collection date.
+A quick visual look at multiplex serology results, antigen by antigen, straight from [SerolyzeR](https://cran.r-project.org/package=SerolyzeR) output: density plots, antigen correlations, a sample × antigen heatmap, and boxplots by metadata variables such as age, sex, site or collection date.
 
 **Open the tool:** https://leacavalli.github.io/SeroGlance/
 
-No installation and no account are needed. The page opens with simulated example data until you load your own files.
+No installation and no account are needed. The page opens with simulated example data until you load your own files. The **About** button on the page summarises everything below.
 
 ## Background
 
-seroGlance was originally developed in the context of the [xSTAR project](https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses), which uses a specific multiplex bead assay described in [A multiplex serological assay for quantification of arbovirus antibody kinetics and neutralizing antibodies](https://doi.org/10.1371/journal.pntd.0013704) (*PLOS Neglected Tropical Diseases*). It works with SerolyzeR output from any multiplex assay. Antigens are grouped into families by the text before the first `_` in their names (e.g. `MAL_`, `ARB_`).
+seroGlance was originally developed in the context of the [xSTAR project](https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses), which uses the multiplex bead assay described in [A Multiplex Serological Assay for the Detection of Antibody Responses to Arboviruses](https://pubmed.ncbi.nlm.nih.gov/41284716/) (*JoVE*). It works with SerolyzeR output from any multiplex assay. Antigens are grouped into families by the text before the first `_` in their names (e.g. `MAL_`, `ARB_`).
 
 ## Data quality: filter upstream
 
@@ -50,6 +50,15 @@ To compare groups, add a CSV with one row per sample:
 
 The file is recognised as metadata if its name contains "meta" or if it is mostly text columns. You can also load it with **Add metadata**.
 
+## Example files
+
+The [`examples`](examples) folder holds the simulated data the page shows when it opens (7 plates, 12 antigens), written in SerolyzeR's format:
+
+- [`seroglance_example_merged_MFI.csv`](examples/seroglance_example_merged_MFI.csv): a merged MFI table, as written by `merge_plate_outputs()`, including blanks and standards;
+- [`seroglance_example_metadata.csv`](examples/seroglance_example_metadata.csv): matching metadata (sex, age, site, region, collection date).
+
+Drop both onto the page to try every view. The same files can be downloaded from the page itself (About → Example files, or the links in the example-data banner).
+
 ## Views
 
 - **Density**: the distribution of each antigen, for all samples pooled or for each plate. Hover a panel to read values; click it for a larger view and a summary table.
@@ -61,7 +70,7 @@ All views can show MFI, RAU or nMFI, on a log or linear scale.
 
 ## Updating the site
 
-seroGlance is a single file, `index.html`. To update the site, replace that file in this repository; GitHub Pages republishes it within a few minutes.
+seroGlance is a single file, `index.html`; the logo, browser-tab icon and example-file downloads are built into it. To update the site, replace that file in this repository; GitHub Pages republishes it within a few minutes.
 
 ## Logo
 

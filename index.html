@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>seroGlance</title>
-<meta name="description" content="seroGlance: quick-look densities, correlations, heatmaps and by-group boxplots of SerolyzeR serology output, with optional sample metadata. Files are read in your browser and never uploaded.">
-<style>body{margin:0}[hidden]{display:none!important}.notes a{color:var(--accent)}</style>
+<meta name="description" content="seroGlance: a quick visual look at multiplex serology results, antigen by antigen, straight from SerolyzeR output. Files are read in your browser and never uploaded.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20width=%22128%22%20height=%22128%22%20viewBox=%220%200%20128%20128%22%3E%3Cstyle%3E.sg-lens%7Bstroke:%232a78d6%7D.sg-soft%7Bfill:%232a78d6;fill-opacity:.18%7D.sg-bead%7Bfill:%232a78d6;fill-opacity:.12;stroke:%232a78d6%7D.sg-ag%7Bfill:%23e08a2c%7D.sg-teth%7Bstroke:%23a8641c%7D.sg-ab%7Bstroke:%231d3557%7D.sg-pe%7Bfill:%23e0457b%7D%40media%20(prefers-color-scheme:%20dark)%7B.sg-lens%7Bstroke:%233987e5%7D.sg-soft%7Bfill:%233987e5%7D.sg-bead%7Bfill:%233987e5;stroke:%233987e5%7D.sg-ag%7Bfill:%23f0a957%7D.sg-teth%7Bstroke:%23c98a3e%7D.sg-ab%7Bstroke:%23dbe7f6%7D.sg-pe%7Bfill:%23f27aa6%7D%7D%3C/style%3E%3Ccircle%20class=%22sg-bead%22%20%20cx=%2260.1%22%20cy=%2262.6%22%20r=%2244.4%22%20stroke-width=%227.9%22/%3E%3Cpath%20class=%22sg-soft%22%20%20d=%22M31.6%2078.4%20C41.9%2078.4%2046.7%2046.8%2060.1%2046.8%20C73.6%2046.8%2078.4%2078.4%2088.7%2078.4%20Z%22/%3E%3Cpath%20class=%22sg-lens%22%20fill=%22none%22%20stroke-width=%224.8%22%20stroke-linecap=%22round%22%20d=%22M31.6%2078.4%20C41.9%2078.4%2046.7%2046.8%2060.1%2046.8%20C73.6%2046.8%2078.4%2078.4%2088.7%2078.4%22/%3E%3Cline%20class=%22sg-lens%22%20stroke-width=%2212.7%22%20stroke-linecap=%22round%22%20x1=%2293.8%22%20y1=%2296.2%22%20x2=%22118.4%22%20y2=%22120.9%22/%3E%3Cpath%20class=%22sg-ag%22%20d=%22M60.1%2016.6%20L68.1%208.7%20L60.1%200.8%20L52.2%208.7%20Z%22/%3E%3Cpath%20class=%22sg-ag%22%20d=%22M102.6%2045%20L113%2049.3%20L117.2%2038.9%20L106.9%2034.7%20Z%22/%3E%3Cpath%20class=%22sg-ag%22%20d=%22M51.4%20107.7%20L42.1%20114%20L48.3%20123.3%20L57.6%20117%20Z%22/%3E%3Cpath%20class=%22sg-ag%22%20d=%22M17.8%2080.6%20L7.4%2076.4%20L3.2%2086.7%20L13.6%2090.9%20Z%22/%3E%3Cpath%20class=%22sg-ag%22%20d=%22M22%2036.9%20L19.9%2025.9%20L8.9%2028%20L11%2039%20Z%22/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+<style>body{margin:0}[hidden]{display:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -38,6 +40,7 @@
   --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100;
   --c5: #e87ba4; --c6: #008300; --c7: #6250d6; --c8: #e34948;
   --other: #8b929c;
+  --logo-ag: #e08a2c; --logo-teth: #a8641c; --logo-ab: #1d3557; --logo-pe: #e0457b;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -53,6 +56,7 @@
     --seq-lo: #1d2633; --seq-mid: #2a78d6; --seq-hi: #b7d3f6; --missing: #55585c;
     --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
     --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
+    --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
     color-scheme: dark;
   }
 }
@@ -65,6 +69,7 @@
   --seq-lo: #1d2633; --seq-mid: #2a78d6; --seq-hi: #b7d3f6; --missing: #55585c;
   --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
   --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
+    --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
   color-scheme: dark;
 }
 
@@ -93,10 +98,31 @@ button, input, select { font: inherit; color: inherit; }
 code { font-family: var(--font-mono); font-size: .92em; }
 
 /* Header */
-.masthead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
-.wordmark { font-family: var(--font-display); font-weight: 600; font-size: 28px; letter-spacing: -0.01em; }
-.wordmark span { color: var(--accent); }
-.tagline { color: var(--ink-2); max-width: 70ch; }
+.masthead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 18px; }
+.about-btn { justify-self: end; }
+.wordmark { font-family: var(--font-display); font-weight: 600; font-size: 28px; letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 8px; }
+.wordmark .logo { width: 68px; height: 68px; flex: none; margin: -6px 0; }
+.sg-lens { stroke: var(--accent); } .sg-soft { fill: var(--accent); fill-opacity: .18; }
+.sg-bead { fill: var(--accent); fill-opacity: .12; stroke: var(--accent); }
+.sg-ag { fill: var(--logo-ag); } .sg-teth { stroke: var(--logo-teth); } .sg-ab { stroke: var(--logo-ab); } .sg-pe { fill: var(--logo-pe); }
+.wordmark .wm > span { color: var(--accent); }
+.tagline { color: var(--ink-2); max-width: 62ch; font-size: 15px; }
+.drop-text small.drop-note { color: var(--ink-2); }
+.linkish { background: none; border: 0; padding: 0; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font: inherit; }
+.notice .linkish { color: inherit; font-weight: 600; }
+.about { max-width: 780px; gap: 14px; }
+.about-head { display: flex; align-items: center; gap: 14px; }
+.about-head svg { width: 76px; height: 76px; flex: none; }
+.about-head h2 { font-family: var(--font-display); font-size: 22px; font-weight: 600; }
+.about-head p { color: var(--ink-2); margin-top: 2px; }
+.about section { display: flex; flex-direction: column; gap: 6px; }
+.about h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.about p, .about li { line-height: 1.55; }
+.about ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.about a { color: var(--accent-ink); }
+.about .warn { background: var(--notice-bg); color: var(--notice-ink); border-radius: var(--radius); padding: 10px 12px; }
+.about .warn h3 { color: inherit; }
+.about .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
 /* Drop zone */
 .drop {
@@ -308,12 +334,19 @@ tbody tr:hover { background: var(--accent-soft); }
 .notes b { color: var(--ink-2); font-weight: 600; }
 
 @media (max-width: 760px) {
+  .masthead { grid-template-columns: auto minmax(0, 1fr); }
+  .masthead .tagline { grid-column: 1 / -1; grid-row: 2; }
   .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .corr-layout { grid-template-columns: minmax(0, 1fr); }
   .checklist { max-height: 220px; }
 }
 @media (max-width: 520px) {
   .wordmark { font-size: 24px; }
+  .wordmark .logo { width: 56px; height: 56px; }
+  .about-head { gap: 10px; }
+  .about-head svg { width: 52px; height: 52px; }
+  .about-head h2 { font-size: 19px; }
+  .about-head p { display: none; }
   input[type="search"] { width: 100%; }
   .toolbar .field { flex: 1 1 140px; }
 }
@@ -323,8 +356,25 @@ tbody tr:hover { background: var(--accent-soft); }
 <body>
 <div class="wrap">
   <header class="masthead">
-    <h1 class="wordmark">sero<span>Glance</span></h1>
-    <p class="tagline">Antigen-by-antigen densities, correlations, heatmaps and group comparisons of SerolyzeR output. Drop per-plate, merged or long-format CSV files, plus an optional metadata file; they are read in your browser and never uploaded.</p>
+    <h1 class="wordmark"><svg class="logo" viewBox="0 0 128 128" aria-hidden="true" focusable="false"><path class="sg-soft" d="M40.2 86.1 C48.4 86.1 51.9 64 62.4 64 C72.9 64 76.3 86.1 84.5 86.1 Z"/>
+<path class="sg-lens" fill="none" stroke-width="2.3" stroke-linecap="round" d="M40.2 86.1 C48.4 86.1 51.9 64 62.4 64 C72.9 64 76.3 86.1 84.5 86.1"/>
+<circle class="sg-bead" cx="62.4" cy="74.5" r="32.6" stroke-width="4.1"/>
+<line class="sg-lens" stroke-width="7" stroke-linecap="round" x1="86.8" y1="98.9" x2="106.6" y2="118.8"/>
+<line class="sg-teth" stroke-width="1.5" x1="62.4" y1="39.5" x2="62.4" y2="35.5"/>
+<path class="sg-ag" d="M62.4 35.5 L67 30.8 L62.4 26.1 L57.7 30.8 Z"/>
+<line class="sg-teth" stroke-width="1.5" x1="94.7" y1="61.1" x2="98.4" y2="59.5"/>
+<path class="sg-ag" d="M98.4 59.5 L104.5 62.1 L107 56 L100.9 53.5 Z"/>
+<line class="sg-teth" stroke-width="1.5" x1="55.7" y1="108.8" x2="54.9" y2="112.8"/>
+<path class="sg-ag" d="M54.9 112.8 L49.5 116.5 L53.1 121.9 L58.6 118.3 Z"/>
+<line class="sg-teth" stroke-width="1.5" x1="30.2" y1="88.1" x2="26.4" y2="89.7"/>
+<path class="sg-ag" d="M26.4 89.7 L20.3 87.3 L17.9 93.4 L24 95.8 Z"/>
+<line class="sg-teth" stroke-width="1.5" x1="33.4" y1="54.9" x2="30" y2="52.7"/>
+<path class="sg-ag" d="M30 52.7 L28.8 46.2 L22.3 47.4 L23.5 53.9 Z"/>
+<path class="sg-ab" fill="none" stroke-width="2" stroke-linecap="round" d="M62.4 11 L62.4 19.7 M62.4 19.7 L58.9 27.3 M62.4 19.7 L65.9 27.3"/>
+<path class="sg-ab" fill="none" stroke-width="2" stroke-linecap="round" d="M78.1 11 L71.1 11 M71.1 11 L65 8.1 M71.1 11 L65 13.9"/>
+<path class="sg-pe" d="M82.8 5.7 L84.1 9.2 L87.7 9.4 L84.9 11.7 L85.8 15.2 L82.8 13.2 L79.7 15.2 L80.6 11.7 L77.8 9.4 L81.5 9.2 Z"/></svg><span class="wm">sero<span>Glance</span></span></h1>
+    <p class="tagline">A quick visual look at multiplex serology results, antigen by antigen, straight from SerolyzeR output.</p>
+    <button class="btn about-btn" id="about-btn" type="button" aria-haspopup="dialog">About</button>
   </header>
 
   <section class="drop" id="drop" aria-label="Load files">
@@ -332,6 +382,7 @@ tbody tr:hover { background: var(--accent-soft); }
     <div class="drop-text">
       <strong id="drop-title">Drop SerolyzeR CSV files here</strong>
       <small>Accepts <code>&lt;plate&gt;_MFI.csv</code> / <code>_RAU</code> / <code>_nMFI</code> per-plate files, <code>merged_&lt;type&gt;…csv</code> tables, or a long table with <code>antigen_label</code> and <code>MFI_Median</code> / <code>RAU</code> / <code>nMFI</code> columns. Add as many files as you like. A metadata CSV (a sample ID column plus variables such as age, sex, site or collection date) is picked up automatically, or add it with Add metadata.</small>
+      <small class="drop-note">Files are read in your browser and never uploaded. seroGlance does not filter your data, so remove low-quality samples and antigens before loading. <button type="button" class="linkish" data-about>More in About</button></small>
     </div>
     <div class="drop-actions">
       <button class="btn primary" id="choose" type="button">Choose files</button>
@@ -561,7 +612,6 @@ tbody tr:hover { background: var(--accent-soft); }
     <p><b>Heatmap:</b> one column per sample and one row per antigen, with rows grouped by antigen family (the text before the first “_”). Samples keep the order of the loaded files; nothing is sorted or grouped. Each antigen's values (log₁₀ on the Log scale) are rescaled between its own 1st and 99th percentile, so colours compare samples within an antigen, not antigens with each other. With Fit to width, several samples can share a pixel and their colours are blended; choose 1 or 3 px per sample to see every column.</p>
     <p><b>By group:</b> needs a metadata CSV with one column of sample IDs that match the sample names in the SerolyzeR files (matching ignores case, and SerolyzeR's “.1” suffix on repeated names), plus the variables to compare. Text columns, and number columns with 12 or fewer distinct values, are used as groups directly; other number columns (such as age) are cut into groups at the cut-offs you set; dates are grouped by month or year. Boxes show the median and interquartile range, whiskers reach the furthest value within 1.5 × IQR, and dots are values beyond. With a second variable, boxes are coloured by it; past 8 groups the smallest are combined as Other.</p>
     <p><b>Which wells count:</b> by default only test samples. In SerolyzeR files, names like <code>BLANK</code>, <code>1/400</code>, <code>S_1/400</code>, <code>EMPTY_H9</code> and positive/negative control names are treated as blanks, standards, empty wells or controls; a <code>sample_type</code> column is used when present.</p>
-      <p><b>About:</b> seroGlance reads the CSV files written by <a href="https://cran.r-project.org/package=SerolyzeR" target="_blank" rel="noopener">SerolyzeR</a>, an R package for Luminex multiplex serology data. Everything runs in your browser: files you drop are never uploaded anywhere.</p>
   </section>
 </div>
 
@@ -972,8 +1022,9 @@ function levelOf(v, raw) {
 }
 
 /* --------------------------------------------------------- example data */
-function makeExample() {
-  resetData();
+function makeExample(cap) {
+  if (!cap) resetData();
+  const add = cap ? (...a) => cap.values.push(a) : addValue;
   let seed = 20261030;
   const rand = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   const gauss = () => { let u = 0, v = 0; while (u === 0) u = rand(); while (v === 0) v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
@@ -994,10 +1045,10 @@ function makeExample() {
   const metaRows = [["sample_id", "sex", "age", "site", "region", "collection_date"]];
   const day0 = Date.UTC(2025, 0, 6);
   plates.forEach(([plate, shift, dPrev], pi) => {
-    plateId(plate);
+    if (!cap) plateId(plate);
     for (const [ag, , neg, pos] of antigens) {
-      addValue("MFI", plate, ag, Math.round(neg * 0.4 * shift * Math.exp(0.15 * gauss())), KIND.blank, "BLANK", "BLANK");
-      dil.forEach(d => addValue("MFI", plate, ag, Math.round((pos * 1.6 / Math.pow(1.85, dil.indexOf(d)) + neg * 0.5) * shift), KIND.standard, d, "S_" + d));
+      add("MFI", plate, ag, Math.round(neg * 0.4 * shift * Math.exp(0.15 * gauss())), KIND.blank, "BLANK", "BLANK", "BLANK");
+      dil.forEach(d => add("MFI", plate, ag, Math.round((pos * 1.6 / Math.pow(1.85, dil.indexOf(d)) + neg * 0.5) * shift), KIND.standard, d, "S_" + d, d));
     }
     for (let s = 0; s < 84; s++) {
       // simulated participant: age, sex, site and collection date drive exposure
@@ -1017,16 +1068,55 @@ function makeExample() {
         const mu = positive ? pos : neg;
         const noise = 0.55 * L + 0.84 * gauss();
         const v = mu * shift * Math.exp((positive ? 0.7 : 0.45) * noise);
-        addValue("MFI", plate, ag, Math.max(1, Math.round(v * 2) / 2), KIND.test, id, id, id);
+        add("MFI", plate, ag, Math.max(1, Math.round(v * 2) / 2), KIND.test, id, id, id);
       }
     }
   });
+  if (cap) { cap.meta = metaRows; cap.antigens = antigens.map(a => a[0]); return cap; }
   state.files = [{ name: "Simulated example", format: "example", types: ["MFI"] }];
   state.dataVersion++;
   loadMeta(metaRows, "Simulated metadata");
   state.isExample = true;
   state.ui.type = "MFI";
 }
+
+/* ------------------------------------------------------- example files */
+// The example shown on the page, written out as SerolyzeR would: a merged MFI table
+// (plate_name, sample_name, one column per antigen) and a matching metadata file.
+function exampleFiles() {
+  const cap = makeExample({ values: [] });
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const rows = new Map();
+  for (const [, plate, ag, v, , , , name] of cap.values) {
+    const key = plate + "\u0001" + name;
+    let r = rows.get(key); if (!r) { r = { plate, name, v: {} }; rows.set(key, r); }
+    r.v[ag] = v;
+  }
+  const merged = [["plate_name", "sample_name", ...cap.antigens].map(q).join(",")];
+  for (const r of rows.values()) merged.push([q(r.plate), q(r.name), ...cap.antigens.map(a => r.v[a] ?? "NA")].join(","));
+  const meta = cap.meta.map(row => row.map(c => /[",\n]/.test(c) ? q(c) : c).join(","));
+  return {
+    merged: { filename: "seroglance_example_merged_MFI.csv", text: merged.join("\n") + "\n" },
+    meta: { filename: "seroglance_example_metadata.csv", text: meta.join("\n") + "\n" }
+  };
+}
+// Inside claude.ai the page offers files through the downloads capability; anywhere else
+// (GitHub Pages, a saved copy) it falls back to an ordinary browser download.
+const downloadsReady = (window.claude && typeof window.claude.use === "function")
+  ? window.claude.use("downloads").catch(() => null) : Promise.resolve(null);
+async function saveText(filename, text) {
+  const dl = await downloadsReady;
+  if (dl) {
+    try { await dl.save({ filename, data: text }); return; }
+    catch (e) { if (e && (e.code === "declined" || e.code === "rate_limited")) return; }
+  }
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv" }));
+  const a = document.createElement("a"); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+let exampleCache = null;
+function downloadExample(which) { exampleCache = exampleCache || exampleFiles(); const f = exampleCache[which]; return saveText(f.filename, f.text); }
 
 /* ---------------------------------------------------------------- stats */
 const log10 = Math.log10;
@@ -1336,12 +1426,19 @@ function renderNotices(view) {
   const el = document.getElementById("notices");
   el.replaceChildren();
   const items = [...state.notices];
-  if (state.isExample) items.unshift("You're looking at simulated example data. Drop your SerolyzeR files above to replace it.");
+  if (state.isExample) {
+    const n = document.createElement("span");
+    const link = (text, which) => { const b = document.createElement("button"); b.type = "button"; b.className = "linkish"; b.dataset.download = which; b.textContent = text; return b; };
+    n.append("You're looking at simulated example data. Drop your SerolyzeR files above to replace it. To see the file format, download the example ",
+      link("merged MFI table", "merged"), " and ", link("metadata", "meta"), ".");
+    items.unshift(n);
+  }
   if (view.hiddenNonPos) items.push(`${fmtInt.format(view.hiddenNonPos)} ${state.ui.type} values of zero or below can't be shown on a log scale. Switch to Linear to include them.`);
   if (!items.length) return;
   const box = document.createElement("div"); box.className = "notice";
-  if (items.length === 1) box.textContent = items[0];
-  else { const ul = document.createElement("ul"); for (const t of items) { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); } box.appendChild(ul); }
+  const put = (el, t) => { if (typeof t === "string") el.textContent = t; else el.appendChild(t); };
+  if (items.length === 1) put(box, items[0]);
+  else { const ul = document.createElement("ul"); for (const t of items) { const li = document.createElement("li"); put(li, t); ul.appendChild(li); } box.appendChild(ul); }
   el.appendChild(box);
 }
 
@@ -1520,6 +1617,87 @@ function openDetail(pnl, from) {
   close.focus();
 }
 function closeDetail() { overlay.hidden = true; overlay.replaceChildren(); hideTip(); if (lastFocus) lastFocus.focus(); }
+/* ---------------------------------------------------------------- about */
+const ABOUT_HTML = `
+<section>
+  <h3>What it does</h3>
+  <p>seroGlance gives a quick, model-free look at multiplex serology results processed with <a href="https://cran.r-project.org/package=SerolyzeR" target="_blank" rel="noopener">SerolyzeR</a>:</p>
+  <ul>
+    <li><b>Density:</b> the distribution of each antigen, for all samples pooled or plate by plate.</li>
+    <li><b>Correlations:</b> a matrix for up to 12 antigens, with Spearman or Pearson correlations, densities and scatterplots.</li>
+    <li><b>Heatmap:</b> every sample × antigen, each antigen rescaled between its 1st and 99th percentiles.</li>
+    <li><b>By group:</b> boxplots by one or two variables from a metadata file, such as age group, sex, site or collection month.</li>
+  </ul>
+  <p>Every view can show MFI, RAU or nMFI, on a log or linear scale.</p>
+</section>
+<section class="warn">
+  <h3>Filter your data first</h3>
+  <p>seroGlance does not filter your data. Apart from leaving out standards, blanks, controls and empty wells by default, it plots every value it is given. Remove low-quality test samples (for example wells with low bead counts or failed runs) and unreliable antigens from the SerolyzeR outputs before loading them; SerolyzeR itself does not remove low-count wells. If you load raw SerolyzeR outputs, every plot reflects the quality of that data, problems included.</p>
+</section>
+<section>
+  <h3>Your data stays on your computer</h3>
+  <p>Files are read by your browser and never uploaded anywhere. The only thing the page downloads is its fonts. You can also save this page and open it offline.</p>
+</section>
+<section>
+  <h3>Files it reads</h3>
+  <ul>
+    <li>Per-plate files from <code>process_plate()</code>: <code>&lt;plate&gt;_MFI.csv</code>, <code>_RAU.csv</code>, <code>_nMFI.csv</code>.</li>
+    <li>Merged tables from <code>merge_plate_outputs()</code>: <code>merged_&lt;type&gt;…csv</code>.</li>
+    <li>A long table with an <code>antigen_label</code> column and <code>MFI_Median</code>, <code>RAU</code> and/or <code>nMFI</code> columns.</li>
+  </ul>
+  <p>Whether a file holds MFI, RAU or nMFI is read from its file name, and antigen names must be written the same way in every file. Only test samples are plotted by default: wells named like <code>BLANK</code>, <code>1/400</code>, <code>S_1/400</code> or <code>EMPTY_H9</code>, and control names, follow SerolyzeR's rules for blanks, standards, empty wells and controls (a <code>sample_type</code> column is used when present).</p>
+</section>
+<section>
+  <h3>Metadata (optional)</h3>
+  <p>A CSV with one row per sample: a column of sample IDs that match the sample names in your files (any column name; matching ignores case and SerolyzeR's <code>.1</code> suffix), plus variables to compare. Text columns are used as groups, number columns such as age are cut into groups at cut-offs you can edit, and dates are grouped by month or year. It is picked up automatically if its name contains "meta" or it is mostly text; otherwise use Add metadata.</p>
+</section>
+<section>
+  <h3>Example files</h3>
+  <p>The simulated data shown when the page opens (7 plates, 12 antigens), written out in SerolyzeR's merged format, with matching metadata. Load both to try every view.</p>
+  <div class="row">
+    <button class="btn small" type="button" data-download="merged">Download merged MFI table</button>
+    <button class="btn small" type="button" data-download="meta">Download metadata</button>
+  </div>
+</section>
+<section>
+  <h3>Background</h3>
+  <p>seroGlance was originally developed in the context of the <a href="https://wellcome.org/research-funding/funding-portfolio/funded-grants/reconstructing-transmission-intensity-arboviruses" target="_blank" rel="noopener">xSTAR project</a>, which uses the multiplex bead assay described in <a href="https://pubmed.ncbi.nlm.nih.gov/41284716/" target="_blank" rel="noopener">A Multiplex Serological Assay for the Detection of Antibody Responses to Arboviruses</a>. It works with SerolyzeR output from any multiplex assay; antigens are grouped into families by the text before the first “_” in their names.</p>
+</section>
+<section>
+  <h3>The logo</h3>
+  <p>A quick look through a magnifying glass whose rim is an assay bead, coated with copies of one antigen. A serum IgG is bound to one copy and is itself bound by a phycoerythrin-labelled anti-IgG, whose fluorescence is the MFI the instrument reads.</p>
+</section>
+<p class="meta">Source code and issues: <a href="https://github.com/Leacavalli/SeroGlance" target="_blank" rel="noopener">github.com/Leacavalli/SeroGlance</a></p>`;
+
+function openAbout(from) {
+  hideTip();
+  lastFocus = from || document.getElementById("about-btn");
+  overlay.replaceChildren();
+  const box = document.createElement("div"); box.className = "detail about";
+  box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); box.setAttribute("aria-labelledby", "about-title");
+  const head = document.createElement("div"); head.className = "about-head";
+  const logo = document.querySelector(".wordmark .logo").cloneNode(true); logo.removeAttribute("class");
+  const left = document.createElement("div"); left.style.flex = "1"; left.style.minWidth = "0";
+  const h = document.createElement("h2"); h.id = "about-title"; h.textContent = "About seroGlance";
+  const lead = document.createElement("p"); lead.textContent = "A quick visual look at multiplex serology results, antigen by antigen, straight from SerolyzeR output.";
+  left.append(h, lead);
+  const close = document.createElement("button"); close.className = "btn"; close.type = "button"; close.textContent = "Close";
+  close.addEventListener("click", closeDetail);
+  head.append(logo, left, close);
+  const body = document.createElement("div"); body.style.display = "flex"; body.style.flexDirection = "column"; body.style.gap = "14px";
+  body.innerHTML = ABOUT_HTML;
+  box.append(head, body);
+  overlay.appendChild(box);
+  overlay.hidden = false;
+  close.focus();
+}
+document.getElementById("about-btn").addEventListener("click", e => openAbout(e.currentTarget));
+document.addEventListener("click", e => {
+  const t = e.target.closest && e.target.closest("[data-about], [data-download]");
+  if (!t) return;
+  if (t.hasAttribute("data-about")) openAbout(t);
+  else downloadExample(t.dataset.download);
+});
 overlay.addEventListener("click", e => { if (e.target === overlay) closeDetail(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !overlay.hidden) closeDetail(); });
 
