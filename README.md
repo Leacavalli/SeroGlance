@@ -8,7 +8,7 @@ No installation and no account are needed. The page opens with simulated example
 
 ## Your data stays on your computer
 
-Everything runs in your web browser. Files you load are read locally and are never uploaded anywhere. The only thing the page downloads is its fonts, from Google Fonts. You can also download `index.html` and open it from your own computer; it then works offline, using your system fonts.
+Everything runs in your web browser. Files you load are read locally and are never uploaded anywhere. You can also download `index.html` and open it from your own computer; it then works offline, using your system fonts.
 
 ## Input files
 
