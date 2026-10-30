@@ -41,6 +41,7 @@
   --c5: #e87ba4; --c6: #008300; --c7: #6250d6; --c8: #e34948;
   --other: #8b929c;
   --logo-ag: #e08a2c; --logo-teth: #a8641c; --logo-ab: #1d3557; --logo-pe: #e0457b;
+  --about-bg: #fde4e1; --about-ink: #b3261e; --about-line: #f3b2aa;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -57,6 +58,7 @@
     --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
     --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
     --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
+    --about-bg: #3a1f1d; --about-ink: #f6a69d; --about-line: #6e3530;
     color-scheme: dark;
   }
 }
@@ -70,6 +72,7 @@
   --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500;
   --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
     --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
+    --about-bg: #3a1f1d; --about-ink: #f6a69d; --about-line: #6e3530;
   color-scheme: dark;
 }
 
@@ -99,7 +102,12 @@ code { font-family: var(--font-mono); font-size: .92em; }
 
 /* Header */
 .masthead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px 18px; }
-.about-btn { justify-self: end; }
+.about-wrap { justify-self: end; display: flex; align-items: center; gap: 4px; }
+.about-hint { background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-size: 12.5px; line-height: 1.35; color: var(--about-ink); text-align: right; max-width: 290px; text-wrap: balance; }
+.about-hint:hover { text-decoration: underline; text-underline-offset: 2px; }
+.about-arrow { width: 34px; height: 22px; flex: none; color: var(--about-ink); margin-top: -8px; }
+.btn.about-btn { margin-left: 2px; background: var(--about-bg); color: var(--about-ink); border-color: var(--about-line); font-weight: 600; }
+.btn.about-btn:hover { background: var(--about-bg); border-color: var(--about-ink); }
 .wordmark { font-family: var(--font-display); font-weight: 600; font-size: 28px; letter-spacing: -0.01em; display: inline-flex; align-items: center; gap: 8px; }
 .wordmark .logo { width: 68px; height: 68px; flex: none; margin: -6px 0; }
 .sg-lens { stroke: var(--accent); } .sg-soft { fill: var(--accent); fill-opacity: .18; }
@@ -336,6 +344,7 @@ tbody tr:hover { background: var(--accent-soft); }
 @media (max-width: 760px) {
   .masthead { grid-template-columns: auto minmax(0, 1fr); }
   .masthead .tagline { grid-column: 1 / -1; grid-row: 2; }
+  .about-hint { max-width: 220px; }
   .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .corr-layout { grid-template-columns: minmax(0, 1fr); }
   .checklist { max-height: 220px; }
@@ -347,6 +356,7 @@ tbody tr:hover { background: var(--accent-soft); }
   .about-head svg { width: 52px; height: 52px; }
   .about-head h2 { font-size: 19px; }
   .about-head p { display: none; }
+  .about-hint, .about-arrow { display: none; }
   input[type="search"] { width: 100%; }
   .toolbar .field { flex: 1 1 140px; }
 }
@@ -374,7 +384,11 @@ tbody tr:hover { background: var(--accent-soft); }
 <path class="sg-ab" fill="none" stroke-width="2" stroke-linecap="round" d="M78.1 11 L71.1 11 M71.1 11 L65 8.1 M71.1 11 L65 13.9"/>
 <path class="sg-pe" d="M82.8 5.7 L84.1 9.2 L87.7 9.4 L84.9 11.7 L85.8 15.2 L82.8 13.2 L79.7 15.2 L80.6 11.7 L77.8 9.4 L81.5 9.2 Z"/></svg><span class="wm">sero<span>Glance</span></span></h1>
     <p class="tagline">A quick visual look at multiplex serology results, antigen by antigen, straight from SerolyzeR output.</p>
-    <button class="btn about-btn" id="about-btn" type="button" aria-haspopup="dialog">About</button>
+    <div class="about-wrap">
+      <button type="button" class="about-hint" data-about>Click here for more information on input files, example data and data quality</button>
+      <svg class="about-arrow" viewBox="0 0 36 24" aria-hidden="true" focusable="false"><path d="M3 19 C12 23 24 19 31 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M24.5 8.5 L31.5 8 L31.5 15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button class="btn about-btn" id="about-btn" type="button" aria-haspopup="dialog">About</button>
+    </div>
   </header>
 
   <section class="drop" id="drop" aria-label="Load files">
