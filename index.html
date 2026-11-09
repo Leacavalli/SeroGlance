@@ -309,6 +309,9 @@ input[type="search"] { width: 180px; }
 .filter-levels label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 .filter-levels .n { color: var(--muted); }
 .filter-hint { font-size: 12px; color: var(--muted); }
+.fold-note { display: flex; flex-direction: column; gap: 6px; }
+.fold-note > div { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.fold-note .btn { background: var(--surface); color: var(--ink); }
 .var-opts input[type="text"] { width: 200px; }
 .hint, .field > span.hint { font-size: 12px; color: var(--muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
 .box-grid { display: grid; gap: 12px; }
@@ -667,6 +670,7 @@ tbody tr:hover { background: var(--accent-soft); }
           <div id="bx-filters"></div>
         </details>
         <p class="matrix-sub" id="bx-sub"></p>
+        <div class="notice fold-note" id="bx-fold" hidden></div>
         <div class="legend box-legend" id="bx-legend"></div>
         <div class="box-grid" id="bx-grid"></div>
       </div>
@@ -677,7 +681,7 @@ tbody tr:hover { background: var(--accent-soft); }
     <p><b>Density:</b> each curve is a Gaussian kernel density estimate (Silverman bandwidth) of the values, on the log₁₀ scale when Log is selected, with an area of 1 so groups of different sizes are comparable. The shared x-axis covers the central 99.8% of values; values outside it still count in n, medians and percentages. Hover a panel to read the share of samples below a value; click it for a larger view and a summary table.</p>
     <p><b>Correlations:</b> computed over the samples that have a value for every selected antigen (and a value above 0 on the log scale). Spearman uses ranks, so it is the same on either scale; Pearson uses log₁₀ values on the Log scale. The red line in each scatterplot is a running mean over 30 equal-sized bins of the x values. With Colour scatterplot points by plate, each plate gets its own colour (listed below the matrix; click a plate there to highlight its points and grey out the rest), and hovering a scatterplot names the plate and sample of the nearest point. Samples are matched across antigens by plate and well (or sample name).</p>
     <p><b>Heatmap:</b> one column per sample and one row per antigen, with rows grouped by antigen family (the text before the first “_”). Samples keep the order of the loaded files; nothing is sorted or grouped. With Don't normalize (the default), all antigens share one colour scale (log₁₀ on the Log scale), from the 1st to the 99th percentile of all values shown, so colours compare antigens with each other as well as samples (strongly reacting antigens look darker throughout). With Normalize by antigen, each antigen's values are rescaled between its own 1st and 99th percentile, so colours compare samples within an antigen, not antigens with each other. With Fit to width, several samples can share a pixel and their colours are blended; choose 1 or 3 px per sample to see every column.</p>
-    <p><b>By group:</b> groups samples by plate (always available, from the loaded files) or by variables from a metadata CSV, which needs one column of sample IDs that match the sample names in the SerolyzeR files (matching ignores case, and SerolyzeR's “.1” suffix on repeated names), plus the variables to compare. Text columns, and number columns with 12 or fewer distinct values, are used as groups directly; other number columns (such as age) are cut into groups at the cut-offs you set; dates are grouped by month or year. Plot as Boxplots: boxes show the median and interquartile range, whiskers reach the furthest value within 1.5 × IQR, and dots are values beyond. Beeswarm: one dot per sample, binned into rows one dot high and spread sideways (squeezed to fit; past 1,500 samples in a group, evenly spaced values through the group are drawn), with a line at the median. Density: one ridge per group, each a kernel density of its values (same bandwidth rule as the Density view, area 1, one height scale per panel), with a tick at the median; groups with fewer than 3 values are shown as ticks. With a second variable, boxes, dots or curves are coloured by it; past 8 groups the smallest are combined as Other. Advanced: filter samples keeps only the samples in the groups you tick (for example one district, some plates or an age range), with up to three filters; the subtitle, and so any exported figure, says which filter is applied.</p>
+    <p><b>By group:</b> groups samples by plate (always available, from the loaded files) or by variables from a metadata CSV, which needs one column of sample IDs that match the sample names in the SerolyzeR files (matching ignores case, and SerolyzeR's “.1” suffix on repeated names), plus the variables to compare. Text columns, and number columns with 12 or fewer distinct values, are used as groups directly; other number columns (such as age) are cut into groups at the cut-offs you set; dates are grouped by month or year. Plot as Boxplots: boxes show the median and interquartile range, whiskers reach the furthest value within 1.5 × IQR, and dots are values beyond. Beeswarm: one dot per sample, binned into rows one dot high and spread sideways (squeezed to fit; past 1,500 samples in a group, evenly spaced values through the group are drawn), with a line at the median. Density: one ridge per group, each a kernel density of its values (same bandwidth rule as the Density view, area 1, one height scale per panel), with a tick at the median; groups with fewer than 3 values are shown as ticks. With a second variable, boxes, dots or curves are coloured by it. To keep plots readable, past 40 groups (first variable) or 8 groups (second variable) the smallest are combined as Other; a warning then says so, with a button to show or colour every group (up to 150 and 24 groups). Plates are always all shown. Advanced: filter samples keeps only the samples in the groups you tick (for example one district, some plates or an age range), with up to three filters; the subtitle, and so any exported figure, says which filter is applied.</p>
     <p><b>Which wells count:</b> by default only test samples. In SerolyzeR files, names like <code>BLANK</code>, <code>1/400</code>, <code>S_1/400</code>, <code>EMPTY_H9</code> and positive/negative control names are treated as blanks, standards, empty wells or controls; a <code>sample_type</code> column is used when present.</p>
   </section>
 </div>
@@ -711,7 +715,7 @@ const state = {
   ui: { type: "MFI", group: "pooled", scale: "log", axis: "shared", includeAll: false, sort: "file", query: "" },
   corr: { selected: new Set(), touched: false, method: "spearman", showDensity: true, showScatter: true, colorPlate: false, hlPlate: null, title: "", filter: "", note: "" },
   heat: { selected: new Set(), touched: false, title: "", filter: "", note: "", width: "fit", norm: "none" },
-  box: { plot: "box", filters: [], var1: null, var2: "", breaks: {}, dateUnit: "month", includeMissing: false, selected: new Set(), touched: false, title: "", filter: "", note: "" },
+  box: { plot: "box", filters: [], showAll: new Set(), var1: null, var2: "", breaks: {}, dateUnit: "month", includeMissing: false, selected: new Set(), touched: false, title: "", filter: "", note: "" },
   view: null,
   corrModel: null,
   heatModel: null
@@ -2695,6 +2699,16 @@ function ensureBoxSelection() {
   b.selected = new Set(fam ? fam[1] : state.antigens.filter(a => recs.has(a)).slice(0, 6));
 }
 
+// Past the 8 palette colours (when every group of a second variable is coloured): hues spaced
+// by the golden angle with alternating lightness, readable on light and dark backgrounds
+function spreadColor(i) {
+  const h = ((25 + i * 137.508) % 360) * Math.PI / 180, L = i % 2 ? 0.72 : 0.58, C = 0.13;
+  const rgb = oklabToRgb([L, C * Math.cos(h), C * Math.sin(h)]);
+  return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+}
+// how many groups are shown before the smallest are combined as "Other", and the most that
+// "show all" will draw
+const FOLD_MAX = { 1: 40, 2: 8 }, SHOW_ALL_MAX = { 1: 150, 2: 24 };
 function foldLevels(counts, max, colour) {
   const all = [...counts.values()];
   const none = all.find(l => l.key === NOVAL.key);
@@ -2710,7 +2724,8 @@ function foldLevels(counts, max, colour) {
   const order = [...regular];
   if (folded.size) order.push({ ...OTHER });
   if (none) order.push({ ...NOVAL });
-  order.forEach((l, i) => { l.color = !colour ? "var(--accent)" : l.key === OTHER.key ? "var(--other)" : l.key === NOVAL.key ? "var(--missing)" : `var(--c${i + 1})`; });
+  const many = regular.length > 8;
+  order.forEach((l, i) => { l.color = !colour ? "var(--accent)" : l.key === OTHER.key ? "var(--other)" : l.key === NOVAL.key ? "var(--missing)" : many ? spreadColor(i) : `var(--c${i + 1})`; });
   const map = new Map(order.map(l => [l.key, l]));
   for (const k of folded) map.set(k, map.get(OTHER.key));
   return { order, map };
@@ -2778,8 +2793,17 @@ function buildBox() {
   const cnt1 = new Map(), cnt2 = new Map();
   let nUsed = 0;
   for (const lv of keyLv.values()) { if (!lv) continue; nUsed++; count(cnt1, lv[0]); if (lv[1]) count(cnt2, lv[1]); }
-  const f1 = foldLevels(cnt1, v1.kind === "plate" ? Infinity : 40, false);
-  const f2 = v2 ? foldLevels(cnt2, 8, true) : null;
+  const regularN = cnt => [...cnt.keys()].filter(k => k !== NOVAL.key).length;
+  const foldInfo = (role, v, cnt) => {
+    const total = regularN(cnt), want = bx.showAll.has(role + ":" + bx["var" + role]);
+    const canAll = total <= SHOW_ALL_MAX[role];
+    const all = v.kind === "plate" && role === 1 ? true : want && canAll;
+    return { role, name: v.name, total, all, want, canAll, max: all ? Infinity : FOLD_MAX[role],
+      folded: !all && total > FOLD_MAX[role] };
+  };
+  const fold1 = foldInfo(1, v1, cnt1), fold2 = v2 ? foldInfo(2, v2, cnt2) : null;
+  const f1 = foldLevels(cnt1, fold1.max, false);
+  const f2 = v2 ? foldLevels(cnt2, fold2.max, true) : null;
   const nB = f2 ? f2.order.length : 1;
 
   // pass 2: values of each antigen in each box
@@ -2816,7 +2840,7 @@ function buildBox() {
     : typeof a.sort === "number" && typeof b.sort === "number" ? a.sort - b.sort
     : String(a.sort).localeCompare(String(b.sort), undefined, { numeric: true, sensitivity: "base" });
   const filterInfo = filters.map(f => ({ value: f.value, v: f.v, keep: f.keep, levels: [...f.counts.values()].sort(byLevel) }));
-  return { status: "ok", v1, v2, usesMeta, filters: filterInfo, nFiltered, nUnmatchedAll, levels1: f1.order, levels2: f2 ? f2.order : null, nB, panels,
+  return { status: "ok", v1, v2, usesMeta, fold1, fold2, filters: filterInfo, nFiltered, nUnmatchedAll, levels1: f1.order, levels2: f2 ? f2.order : null, nB, panels,
     nSamples, nUnmatched, nNoValue, nUsed, hidden, isLog, type: ui.type };
 }
 
@@ -3031,6 +3055,42 @@ function renderMetaBar(model) {
   addBtn("Remove", "meta-remove", () => { state.meta = null; renderBox(); renderChips(state.view); });
 }
 
+// Warning when the smallest groups are combined as "Other", with a button to show them all
+function renderFoldNote(model) {
+  const el = document.getElementById("bx-fold");
+  el.replaceChildren();
+  const items = model && model.status === "ok" ? [model.fold1, model.fold2].filter(Boolean) : [];
+  const b = state.box;
+  for (const f of items) {
+    if (f.role === 1 && model.v1.kind === "plate") continue;
+    const key = f.role + ":" + b["var" + f.role];
+    const lim = FOLD_MAX[f.role];
+    const row = document.createElement("div");
+    const txt = document.createElement("span");
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "btn small";
+    if (f.folded) {
+      txt.textContent = f.role === 1
+        ? `${f.name} has ${fmtInt.format(f.total)} groups: only the ${lim - 1} largest are shown, and the other ${fmtInt.format(f.total - lim + 1)} are combined as “Other”.`
+        : `${f.name} has ${fmtInt.format(f.total)} groups: only the ${lim - 1} largest get their own colour, and the other ${fmtInt.format(f.total - lim + 1)} are combined as “Other”.`;
+      row.appendChild(txt);
+      if (f.canAll) {
+        btn.textContent = f.role === 1 ? `Show all ${fmtInt.format(f.total)} groups` : `Colour all ${fmtInt.format(f.total)} groups`;
+        btn.addEventListener("click", () => { b.showAll.add(key); renderBox(); });
+        row.appendChild(btn);
+      } else {
+        txt.textContent += ` That is too many to ${f.role === 1 ? "show" : "colour"} separately (at most ${SHOW_ALL_MAX[f.role]}); use Advanced: filter samples to keep the groups you need.`;
+      }
+    } else if (f.all && f.total > lim) {
+      txt.textContent = f.role === 1 ? `Showing all ${fmtInt.format(f.total)} ${f.name} groups.` : `Colouring all ${fmtInt.format(f.total)} ${f.name} groups; with this many, colours are hard to tell apart (hover the plot to see which group is which).`;
+      btn.textContent = f.role === 1 ? `Combine the smallest as “Other” again` : `Colour only the ${lim - 1} largest again`;
+      btn.addEventListener("click", () => { b.showAll.delete(key); renderBox(); });
+      row.append(txt, btn);
+    } else continue;
+    el.appendChild(row);
+  }
+  el.hidden = !el.childElementCount;
+}
+
 function renderBoxFilters(model) {
   const adv = document.getElementById("bx-adv"), list = document.getElementById("bx-filters");
   const b = state.box;
@@ -3085,13 +3145,15 @@ function renderBoxControls(model) {
     : `${fmtInt.format(v.distinct)} groups` + (v.distinct > max ? `; largest ${max - 1} ${verb}` : "");
   const none = document.createElement("option"); none.value = ""; none.textContent = "None"; s2.appendChild(none);
   for (const v of (M ? M.vars : [])) {
-    const o1 = document.createElement("option"); o1.value = v.name; o1.textContent = `${v.name} (${describe(v, 40, "shown")})`; s1.appendChild(o1);
-    if (v.name !== b.var1) { const o2 = document.createElement("option"); o2.value = v.name; o2.textContent = `${v.name} (${describe(v, 8, "coloured")})`; s2.appendChild(o2); }
+    const all1 = b.showAll.has("1:" + v.name) && v.distinct <= SHOW_ALL_MAX[1], all2 = b.showAll.has("2:" + v.name) && v.distinct <= SHOW_ALL_MAX[2];
+    const o1 = document.createElement("option"); o1.value = v.name; o1.textContent = `${v.name} (${describe(v, all1 ? Infinity : FOLD_MAX[1], "shown")})`; s1.appendChild(o1);
+    if (v.name !== b.var1) { const o2 = document.createElement("option"); o2.value = v.name; o2.textContent = `${v.name} (${describe(v, all2 ? Infinity : FOLD_MAX[2], "coloured")})`; s2.appendChild(o2); }
   }
   const nP = state.plates.length;
   const plateOpt = (txt) => { const o = document.createElement("option"); o.value = PLATE_VAR.value; o.textContent = txt; return o; };
   s1.appendChild(plateOpt(`plate (${fmtInt.format(nP)} plate${nP === 1 ? "" : "s"}, from the data files)`));
-  if (b.var1 !== PLATE_VAR.value) s2.appendChild(plateOpt(`plate (${fmtInt.format(nP)} plate${nP === 1 ? "" : "s"}${nP > 8 ? "; largest 7 coloured" : ""})`));
+  const allP2 = b.showAll.has("2:" + PLATE_VAR.value) && nP <= SHOW_ALL_MAX[2];
+  if (b.var1 !== PLATE_VAR.value) s2.appendChild(plateOpt(`plate (${fmtInt.format(nP)} plate${nP === 1 ? "" : "s"}${nP > 8 && !allP2 ? "; largest 7 coloured" : ""})`));
   s1.value = b.var1 || ""; s2.value = b.var2 || "";
   s1.disabled = s2.disabled = !state.files.length;
   document.getElementById("bx-missing").checked = b.includeMissing;
@@ -3181,6 +3243,7 @@ function renderBox() {
   renderMetaBar(model);
   renderBoxControls(model);
   renderBoxFilters(model);
+  renderFoldNote(model);
   renderBoxLegend(model);
   const sub = document.getElementById("bx-sub");
   if (model.status === "nometa") { sub.textContent = ""; boxEmpty("Drop SerolyzeR files above to compare antigens between plates, and add a metadata file to compare other groups. It needs one column with the sample IDs used in your SerolyzeR files (sample_name), plus any variables of interest: age, sex, site or region, collection date…", true); return; }
