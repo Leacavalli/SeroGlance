@@ -42,6 +42,7 @@
   --other: #8b929c;
   --logo-ag: #e08a2c; --logo-teth: #a8641c; --logo-ab: #1d3557; --logo-pe: #e0457b;
   --about-bg: #fde4e1; --about-ink: #b3261e; --about-line: #f3b2aa;
+  --save-bg: #16824a; --save-bg-hover: #0f6b3b;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -59,6 +60,7 @@
     --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
     --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
     --about-bg: #3a1f1d; --about-ink: #f6a69d; --about-line: #6e3530;
+    --save-bg: #1a8a4f; --save-bg-hover: #23a35f;
     color-scheme: dark;
   }
 }
@@ -73,6 +75,7 @@
   --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --other: #8a8981;
     --logo-ag: #f0a957; --logo-teth: #c98a3e; --logo-ab: #dbe7f6; --logo-pe: #f27aa6;
     --about-bg: #3a1f1d; --about-ink: #f6a69d; --about-line: #6e3530;
+    --save-bg: #1a8a4f; --save-bg-hover: #23a35f;
   color-scheme: dark;
 }
 
@@ -87,7 +90,7 @@ body {
 .wrap {
   max-width: 1440px;
   margin: 0 auto;
-  padding-block: 20px 48px;
+  padding-block: 20px 88px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: flex;
@@ -310,6 +313,25 @@ input[type="search"] { width: 180px; }
 .filter-levels .n { color: var(--muted); }
 .filter-hint { font-size: 12px; color: var(--muted); }
 .fold-note { display: flex; flex-direction: column; gap: 6px; }
+.save-fab {
+  position: fixed; z-index: 15;
+  right: max(18px, env(safe-area-inset-right, 0px)); bottom: max(18px, env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--save-bg); color: #fff; border: 0; border-radius: 999px;
+  padding: 11px 18px 11px 15px; font-weight: 600; font-size: 14px; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .2);
+}
+.save-fab:hover { background: var(--save-bg-hover); }
+.save-fab:disabled { opacity: .5; cursor: default; }
+.save-fab:focus-visible { outline: 3px solid var(--save-bg-hover); outline-offset: 3px; }
+.toast {
+  position: fixed; z-index: 16;
+  right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(max(18px, env(safe-area-inset-bottom, 0px)) + 56px);
+  max-width: min(360px, calc(100vw - 36px));
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid var(--save-bg);
+  border-radius: var(--radius); box-shadow: 0 6px 20px rgba(0, 0, 0, .16);
+  padding: 10px 12px; font-size: 13px; line-height: 1.45;
+}
 .fold-note > div { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .fold-note .btn { background: var(--surface); color: var(--ink); }
 .var-opts input[type="text"] { width: 200px; }
@@ -425,7 +447,7 @@ tbody tr:hover { background: var(--accent-soft); }
     <div class="platemap" aria-hidden="true"></div>
     <div class="drop-text">
       <strong id="drop-title">Drop SerolyzeR CSV files here</strong>
-      <small>Accepts <code>&lt;plate&gt;_MFI.csv</code> / <code>_RAU</code> / <code>_nMFI</code> per-plate files, <code>merged_&lt;type&gt;…csv</code> tables, or a long table with <code>antigen_label</code> and <code>MFI_Median</code> / <code>RAU</code> / <code>nMFI</code> columns. Add as many files as you like. A metadata CSV (a sample ID column plus variables such as age, sex, site or collection date) is picked up automatically, or add it with Add metadata.</small>
+      <small>Accepts <code>&lt;plate&gt;_MFI.csv</code> / <code>_RAU</code> / <code>_nMFI</code> per-plate files, <code>merged_&lt;type&gt;…csv</code> tables, or a long table with <code>antigen_label</code> and <code>MFI_Median</code> / <code>RAU</code> / <code>nMFI</code> columns. Add as many files as you like. A metadata CSV (a sample ID column plus variables such as age, sex, site or collection date) is picked up automatically, or add it with Add metadata. A saved seroGlance session (.json) reopens everything as it was.</small>
       <small class="drop-note">Files are read in your browser and never uploaded. seroGlance does not filter your data, so remove low-quality samples and antigens before loading. <button type="button" class="linkish" data-about>More in About</button></small>
     </div>
     <div class="drop-actions">
@@ -433,7 +455,7 @@ tbody tr:hover { background: var(--accent-soft); }
       <button class="btn" id="choose-meta" type="button">Add metadata</button>
       <button class="btn" id="example" type="button" hidden>Show example data</button>
       <button class="btn" id="clear" type="button">Clear</button>
-      <input class="sr-only" type="file" id="file-input" accept=".csv,.txt,text/csv" multiple>
+      <input class="sr-only" type="file" id="file-input" accept=".csv,.txt,text/csv,.json,application/json" multiple>
       <input class="sr-only" type="file" id="meta-input" accept=".csv,.txt,text/csv">
     </div>
   </section>
@@ -686,6 +708,11 @@ tbody tr:hover { background: var(--accent-soft); }
   </section>
 </div>
 
+<button class="save-fab" id="save-session" type="button" title="Save the loaded data, metadata and settings to one file you can reopen or share">
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 3v5h8V3M7 21v-7h10v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+  <span>Save session</span>
+</button>
+<div class="toast" id="toast" role="status" hidden></div>
 <div class="tip" id="tip" hidden></div>
 <div class="overlay" id="overlay" hidden></div>
 
@@ -925,13 +952,22 @@ function loadRows(rows, fileName) {
 }
 
 async function loadFiles(fileList, opts = {}) {
-  const files = [...fileList].filter(f => f && f.name);
+  const isSession = f => /\.json$/i.test(f.name);
+  // a saved session replaces everything, so it is read before any CSV dropped with it
+  const files = [...fileList].filter(f => f && f.name).sort((a, b) => isSession(b) - isSession(a));
   if (!files.length) return;
-  if (state.isExample) resetData();
+  if (state.isExample && !files.some(isSession)) resetData();
   const title = document.getElementById("drop-title");
+  let restoredTab = null;
   for (const [i, f] of files.entries()) {
     title.textContent = `Reading ${f.name} (${i + 1} of ${files.length})…`;
     await new Promise(r => setTimeout(r, 0));
+    if (isSession(f)) {
+      try { restoredTab = await restoreSession(await f.text(), f.name); }
+      catch (err) { state.notices.push(`${f.name} could not be opened as a seroGlance session (${err && err.message ? err.message : "unknown error"}).`); }
+      continue;
+    }
+    if (state.isExample) resetData();
     try {
       const rows = parseCSV(await f.text());
       if (opts.meta || /meta/i.test(f.name)) {
@@ -962,7 +998,175 @@ async function loadFiles(fileList, opts = {}) {
   const available = TYPES.filter(t => state.data[t].size);
   if (available.length && !available.includes(state.ui.type)) state.ui.type = available[0];
   refresh();
+  if (restoredTab) setTab(restoredTab);
 }
+
+/* -------------------------------------------------------------- sessions */
+// A session file holds everything needed to reopen the page as it was: the values read from
+// the SerolyzeR files, the metadata and the settings of every view. It is gzip-compressed and
+// base64-encoded inside a small JSON wrapper when the browser can compress, plain JSON otherwise.
+const SESSION_FORMAT = "seroglance-session";
+function sessionPayload() {
+  const types = {};
+  for (const t of TYPES) {
+    if (!state.data[t].size) continue;
+    const keys = new Array(state.keys[t].size);
+    state.keys[t].forEach((r, k) => { keys[r] = k; });
+    const recs = {};
+    state.data[t].forEach((rec, a) => { recs[a] = { v: rec.v, p: rec.p, k: rec.k, r: rec.r }; });
+    types[t] = { keys, info: state.keyInfo[t], sample: state.keySample[t], recs };
+  }
+  const c = state.corr, h = state.heat, b = state.box, M = state.meta;
+  return {
+    data: { plates: state.plates, antigens: state.antigens, types, loadedKeys: [...state.loadedKeys],
+      files: state.files, isExample: state.isExample },
+    meta: M ? { file: M.file, header: M.header, rows: M.rows, idCol: M.idCol, idManual: M.idManual } : null,
+    settings: {
+      tab: state.tab,
+      ui: { type: state.ui.type, scale: state.ui.scale, group: state.ui.group, axis: state.ui.axis, sort: state.ui.sort, query: state.ui.query, includeAll: state.ui.includeAll },
+      corr: { selected: [...c.selected], touched: c.touched, method: c.method, showDensity: c.showDensity, showScatter: c.showScatter, colorPlate: c.colorPlate, hlPlate: c.hlPlate, title: c.title },
+      heat: { selected: [...h.selected], touched: h.touched, title: h.title, width: h.width, norm: h.norm },
+      box: { plot: b.plot, var1: b.var1, var2: b.var2, breaks: b.breaks, dateUnit: b.dateUnit, includeMissing: b.includeMissing,
+        selected: [...b.selected], touched: b.touched, title: b.title, showAll: [...b.showAll],
+        filters: b.filters.map(f => ({ var: f.var, keep: [...f.keep] })) }
+    }
+  };
+}
+function bytesToBase64(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+function base64ToBytes(b64) {
+  const s = atob(b64), out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+async function buildSessionFile() {
+  const json = JSON.stringify(sessionPayload());
+  const nSamples = Math.max(0, ...TYPES.map(t => state.keys[t].size));
+  const wrapper = { format: SESSION_FORMAT, version: 1, app: "seroGlance", savedAt: new Date().toISOString(),
+    summary: { plates: state.plates.length, antigens: state.antigens.length, samples: nSamples,
+      files: state.files.map(f => f.name), metadata: state.meta ? state.meta.file : null } };
+  if (window.CompressionStream) {
+    const gz = await new Response(new Blob([json]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+    wrapper.encoding = "gzip+base64"; wrapper.payload = bytesToBase64(new Uint8Array(gz));
+  } else {
+    wrapper.encoding = "json"; wrapper.payload = JSON.parse(json);
+  }
+  return JSON.stringify(wrapper);
+}
+
+// returns the tab to show once the page is redrawn
+async function restoreSession(text, fileName) {
+  const w = JSON.parse(text);
+  if (!w || w.format !== SESSION_FORMAT) throw new Error("not a seroGlance session file");
+  let s;
+  if (w.encoding === "gzip+base64") {
+    if (!window.DecompressionStream) throw new Error("this browser cannot read compressed sessions; try a recent Chrome, Edge, Firefox or Safari");
+    const txt = await new Response(new Blob([base64ToBytes(w.payload)]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+    s = JSON.parse(txt);
+  } else s = w.payload;
+  const d = s && s.data;
+  if (!d || !Array.isArray(d.plates) || !Array.isArray(d.antigens) || typeof d.types !== "object") throw new Error("the file is incomplete");
+  // check the stored values before replacing anything
+  for (const t of Object.keys(d.types)) {
+    if (!TYPES.includes(t)) throw new Error(`unknown value type ${t}`);
+    const td = d.types[t];
+    if (!Array.isArray(td.keys) || !Array.isArray(td.info) || !Array.isArray(td.sample) || typeof td.recs !== "object") throw new Error("the file is incomplete");
+    for (const rec of Object.values(td.recs)) {
+      const n = rec && Array.isArray(rec.v) ? rec.v.length : -1;
+      if (n < 0 || ![rec.p, rec.k, rec.r].every(a => Array.isArray(a) && a.length === n)) throw new Error("the stored values are inconsistent");
+      for (let i = 0; i < n; i++) {
+        if (typeof rec.v[i] !== "number" || !(rec.p[i] >= 0 && rec.p[i] < d.plates.length) || !(rec.r[i] >= -1 && rec.r[i] < td.keys.length))
+          throw new Error("the stored values are inconsistent");
+      }
+    }
+  }
+  resetData();
+  d.plates.forEach(n => plateId(String(n)));
+  d.antigens.forEach(a => { a = String(a); if (!state.antigenIndex.has(a)) { state.antigenIndex.set(a, state.antigens.length); state.antigens.push(a); } });
+  for (const t of Object.keys(d.types)) {
+    const td = d.types[t];
+    td.keys.forEach((k, r) => state.keys[t].set(String(k), r));
+    state.keyInfo[t] = td.info.map(String);
+    state.keySample[t] = td.sample.map(String);
+    for (const [a, rec] of Object.entries(td.recs)) {
+      if (!state.antigenIndex.has(a)) { state.antigenIndex.set(a, state.antigens.length); state.antigens.push(a); }
+      state.data[t].set(a, { v: rec.v, p: rec.p, k: rec.k, r: rec.r });
+    }
+  }
+  state.loadedKeys = new Set((d.loadedKeys || []).map(String));
+  state.files = Array.isArray(d.files) && d.files.length ? d.files.map(f => ({ name: String(f.name || ""), format: String(f.format || ""), types: Array.isArray(f.types) ? f.types : [] })) : [{ name: fileName, format: "session", types: TYPES.filter(t => state.data[t].size) }];
+  state.isExample = !!d.isExample;
+  state.dataVersion++;
+
+  // settings (each value checked against what the page accepts)
+  const st = s.settings || {}, pick = (v, ok, dflt) => ok.includes(v) ? v : dflt;
+  const str = (v, d0 = "") => typeof v === "string" ? v.slice(0, 200) : d0;
+  const antigenSet = arr => new Set((Array.isArray(arr) ? arr : []).map(String).filter(a => state.antigenIndex.has(a)));
+  const ui = st.ui || {};
+  Object.assign(state.ui, {
+    type: pick(ui.type, TYPES, state.ui.type), scale: pick(ui.scale, ["log", "linear"], state.ui.scale),
+    group: pick(ui.group, ["pooled", "plate"], state.ui.group), axis: pick(ui.axis, ["shared", "own"], state.ui.axis),
+    sort: pick(ui.sort, ["file", "az", "median"], state.ui.sort), query: str(ui.query), includeAll: !!ui.includeAll });
+  const c = st.corr || {};
+  Object.assign(state.corr, { selected: antigenSet(c.selected), touched: !!c.touched, method: pick(c.method, ["spearman", "pearson"], "spearman"),
+    showDensity: c.showDensity !== false, showScatter: c.showScatter !== false, colorPlate: !!c.colorPlate,
+    hlPlate: Number.isInteger(c.hlPlate) && c.hlPlate >= 0 && c.hlPlate < state.plates.length ? c.hlPlate : null, title: str(c.title) });
+  const h = st.heat || {};
+  Object.assign(state.heat, { selected: antigenSet(h.selected), touched: !!h.touched, title: str(h.title),
+    width: pick(h.width, ["fit", "1", "3"], "fit"), norm: pick(h.norm, ["none", "antigen"], "none") });
+  const b = st.box || {};
+  const breaks = {};
+  if (b.breaks && typeof b.breaks === "object") for (const [k, v] of Object.entries(b.breaks)) if (Array.isArray(v)) breaks[String(k)] = v.map(Number).filter(Number.isFinite);
+  Object.assign(state.box, { plot: pick(b.plot, ["box", "swarm", "density"], "box"), var1: typeof b.var1 === "string" ? b.var1 : null,
+    var2: typeof b.var2 === "string" ? b.var2 : "", breaks, dateUnit: pick(b.dateUnit, ["month", "year"], "month"),
+    includeMissing: !!b.includeMissing, selected: antigenSet(b.selected), touched: !!b.touched, title: str(b.title),
+    showAll: new Set((Array.isArray(b.showAll) ? b.showAll : []).map(String)),
+    filters: (Array.isArray(b.filters) ? b.filters : []).slice(0, 3).filter(f => f && typeof f.var === "string")
+      .map(f => ({ var: f.var, keep: new Set((Array.isArray(f.keep) ? f.keep : []).map(String)) })) });
+  // metadata last, so a saved grouping that still exists is kept
+  if (s.meta && Array.isArray(s.meta.header) && Array.isArray(s.meta.rows)) {
+    const header = s.meta.header.map(String);
+    const rows = s.meta.rows.filter(Array.isArray).map(r => header.map((_, i) => r[i] == null ? "" : String(r[i])));
+    const meta = { file: str(s.meta.file, "metadata"), header, rows, idCol: 0, idManual: !!s.meta.idManual, vars: [], guessedAt: state.dataVersion, _k2r: null };
+    const idCol = Number.isInteger(s.meta.idCol) && s.meta.idCol >= 0 && s.meta.idCol < header.length ? s.meta.idCol : 0;
+    const keep1 = state.box.var1, keep2 = state.box.var2;
+    setIdCol(meta, idCol);
+    if (keep1 && (keep1 === PLATE_VAR.value || meta.vars.some(v => v.name === keep1))) state.box.var1 = keep1;
+    if (keep2 && (keep2 === PLATE_VAR.value || meta.vars.some(v => v.name === keep2)) && keep2 !== state.box.var1) state.box.var2 = keep2;
+    state.meta = meta;
+  }
+  const when = w.savedAt ? new Date(w.savedAt) : null;
+  state.notices.push(`${fileName}: session reopened${when && !isNaN(when) ? ` (saved ${when.toLocaleString()})` : ""}, with its data${state.meta ? ", metadata" : ""} and settings.`);
+  return pick(st.tab, ["dist", "corr", "heat", "box"], "dist");
+}
+
+let toastTimer = 0;
+function showToast(text) {
+  const t = document.getElementById("toast");
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 9000);
+}
+async function saveSession(btn) {
+  if (!state.files.length) return;
+  const label = btn.querySelector("span"), old = label.textContent;
+  btn.disabled = true; label.textContent = "Saving…";
+  try {
+    const text = await buildSessionFile();
+    const d = new Date(), pad = n => String(n).padStart(2, "0");
+    const filename = `seroglance_session_${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}.json`;
+    await saveFile(filename, new Blob([text], { type: "application/json" }), "application/json");
+    const mb = text.length / 1048576;
+    showToast(`Session saved as ${filename} (${mb < 0.1 ? "<0.1" : mb.toFixed(1)} MB). Drop it onto seroGlance to reopen the data${state.meta ? ", metadata" : ""} and settings. It contains your data, so share it only with people allowed to see it.`);
+  } catch (e) {
+    console.error(e);
+    showToast("The session could not be saved.");
+  } finally { label.textContent = old; btn.disabled = !state.files.length; }
+}
+document.getElementById("save-session").addEventListener("click", e => saveSession(e.currentTarget));
+document.getElementById("toast").addEventListener("click", e => { e.currentTarget.hidden = true; });
 
 /* ------------------------------------------------------------- metadata */
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -1928,6 +2132,10 @@ const ABOUT_HTML = `
 <section class="warn">
   <h3>Filter your data first</h3>
   <p>seroGlance does not filter your data. Apart from leaving out standards, blanks, controls and empty wells by default, it plots every value it is given. Remove low-quality test samples (for example wells with low bead counts or failed runs) and unreliable antigens from the SerolyzeR outputs before loading them; SerolyzeR itself does not remove low-count wells. If you load raw SerolyzeR outputs, every plot reflects the quality of that data, problems included.</p>
+</section>
+<section>
+  <h3>Saving and sharing a session</h3>
+  <p>The green <b>Save session</b> button (bottom right) saves the loaded data, the metadata and the settings of every view (selected antigens, groupings, filters, titles…) to one <code>.json</code> file. Drop that file onto seroGlance, here or on anyone's computer, to reopen everything as it was. The file contains your data, so share it only with people allowed to see it.</p>
 </section>
 <section>
   <h3>Your data stays on your computer</h3>
@@ -3359,6 +3567,7 @@ function syncControls() {
   document.getElementById("show-scatter").checked = c.showScatter;
   document.getElementById("example").hidden = state.isExample || state.files.length > 0;
   document.getElementById("clear").disabled = !state.files.length;
+  document.getElementById("save-session").disabled = !state.files.length;
   for (const t of ["dist", "corr", "heat", "box"]) {
     document.getElementById("tab-" + t).setAttribute("aria-selected", String(state.tab === t));
     document.getElementById("view-" + t).hidden = state.tab !== t;

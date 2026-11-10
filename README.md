@@ -20,6 +20,10 @@ Quality filtering is meant to happen upstream: remove low-quality test samples (
 
 If you load raw SerolyzeR outputs instead, be aware that every plot, correlation and group comparison reflects the quality of that data, including any problem wells, plates or antigens.
 
+## Saving and sharing a session
+
+The green **Save session** button at the bottom right saves the loaded data, the metadata and the settings of every view (value type and scale, selected antigens, groupings, filters, titles, heatmap colour scale…) to one compressed `.json` file, `seroglance_session_<date>.json`. Drop that file onto seroGlance, or pick it with *Choose files*, to reopen everything as it was, on any computer. The file contains your data, so share it only with people allowed to see it.
+
 ## Your data stays on your computer
 
 Everything runs in your web browser. Files you load are read locally and are never uploaded anywhere. The only thing the page downloads is its fonts, from Google Fonts. You can also download `index.html` and open it from your own computer; it then works offline, using your system fonts.
@@ -72,7 +76,7 @@ Drop both onto the page to try every view. The same files can be downloaded from
 - **Density**: the distribution of each antigen, for all samples pooled or for each plate. Hover a panel to read values; click it for a larger view and a summary table.
 - **Correlations**: a matrix for up to 12 antigens of your choice, with Spearman or Pearson correlations, density plots on the diagonal and scatterplots below it. Tick *Colour scatterplot points by plate* to give each plate its own colour; click a plate in the list under the matrix to highlight its points, and hover a scatterplot to see the plate and sample of the nearest point.
 - **Heatmap**: every sample × antigen in the order of the loaded files. *Don't normalize* (the default) puts all antigens on one colour scale, so colours compare antigens with each other as well as samples; *Normalize by antigen* rescales each antigen between its own 1st and 99th percentiles, so colours compare samples within an antigen.
-- **By group**: each selected antigen by one metadata variable, optionally split by a second one shown in colour, plotted as boxplots, beeswarms (one dot per sample) or density ridges (one density curve per group). Click a panel for a larger view and a table of medians and quartiles you can copy.
+- **By group**: each selected antigen by plate (always available, no metadata needed) or by one metadata variable, optionally split by a second one shown in colour (plate can be either), plotted as boxplots, beeswarms (one dot per sample) or density ridges (one density curve per group). To keep plots readable, a variable with more than 40 groups shows its 39 largest and combines the rest as *Other* (more than 8 groups for the coloured second variable); a warning then says so, with a button to show (up to 150) or colour (up to 24) every group. Plates are always all shown. *Advanced: filter samples* keeps only the samples in the groups you tick (for example one district, some plates or an age range), with up to three filters; the subtitle, and so any exported figure, says which filters are applied. Click a panel for a larger view and a table of medians and quartiles you can copy.
 
 All views can show MFI, RAU or nMFI, on a log or linear scale.
 
