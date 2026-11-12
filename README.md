@@ -50,6 +50,8 @@ Whether a file holds MFI, RAU or nMFI is read from its file name. Antigen names 
 
 On the page, the selected value type is defined under the *Value* buttons, and hovering a button shows its definition.
 
+**SNAP-tagged antigens:** if your files include a control bead coated with the SNAP tag alone (an antigen with "SNAP" and "CTRL" or "control" in its name, such as `CTRL_SNAP`), the option *Divide SNAP antigens by CTRL_SNAP* appears next to the *Value* buttons. It divides the MFI of every other antigen with "SNAP" in its name by the control's MFI in the same well, so 1 means the same signal as the tag alone; this accounts for antibodies, or background binding, to the tag itself. It applies to MFI only. The control stays in MFI, and a value whose well has no control value above 0 is left out. Divided antigens are marked "÷ CTRL_SNAP" on their panels, and subtitles and exported figures say when the option is on. Because the ratios sit on a different scale from MFI, use *Per antigen* x-axes in the density view, and *Normalize by antigen* in the heatmap, to compare them with other antigens.
+
 ## Metadata (optional)
 
 To compare groups, add a CSV with one row per sample:
