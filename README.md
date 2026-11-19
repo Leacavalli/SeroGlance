@@ -30,7 +30,7 @@ Everything runs in your web browser. Files you load are read locally and are nev
 
 ## Input files
 
-Drop one or more CSV files written by SerolyzeR onto the page, or use **Choose files**:
+The page has two drop boxes, side by side: **1 · SerolyzeR outputs** and **2 · Metadata (optional)**. Drop one or more CSV files written by SerolyzeR in the first box, or use its **Choose files** button:
 
 | File | Written by |
 |---|---|
@@ -62,7 +62,7 @@ To compare groups, add a CSV with one row per sample:
   - number columns such as age, cut into groups at cut-offs you can edit (age defaults to <5, 5–15, 15–25, 25–45 and ≥45);
   - date columns such as collection date, grouped by month or by year. Ambiguous dates like 03/04/2025 are read as day/month/year.
 
-The file is recognised as metadata if its name contains "meta" or if it is mostly text columns. You can also load it with **Add metadata**.
+Drop it in the **Metadata** box, or use **Choose file** there. The box then shows the file name, its size, the sample ID column and how many samples it matched, with **Replace** and **Remove** buttons. **Clear** in the SerolyzeR box empties that box only and keeps your metadata. A metadata file dropped with the SerolyzeR files is still recognised if its name contains "meta" or it is mostly text columns, and a SerolyzeR output dropped in the Metadata box is loaded as data.
 
 ## Example files
 
@@ -71,7 +71,7 @@ The [`examples`](examples) folder holds the simulated data the page shows when i
 - [`seroglance_example_merged_MFI.csv`](examples/seroglance_example_merged_MFI.csv): a merged MFI table, as written by `merge_plate_outputs()`, including blanks and standards;
 - [`seroglance_example_metadata.csv`](examples/seroglance_example_metadata.csv): matching metadata (sex, age, site, region, collection date).
 
-Drop both onto the page to try every view. The same files can be downloaded from the page itself (About → Example files, or the links in the example-data banner).
+Drop the MFI table in the SerolyzeR box and the metadata in the Metadata box to try every view. The same files can be downloaded from the page itself (About → Example files, or the links in the example-data banner).
 
 ## Views
 

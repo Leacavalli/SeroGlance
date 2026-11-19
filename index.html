@@ -118,7 +118,6 @@ code { font-family: var(--font-mono); font-size: .92em; }
 .sg-ag { fill: var(--logo-ag); } .sg-teth { stroke: var(--logo-teth); } .sg-ab { stroke: var(--logo-ab); } .sg-pe { fill: var(--logo-pe); }
 .wordmark .wm > span { color: var(--accent); }
 .tagline { color: var(--ink-2); max-width: 62ch; font-size: 15px; }
-.drop-text small.drop-note { color: var(--ink-2); }
 .linkish { background: none; border: 0; padding: 0; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; font: inherit; }
 .notice .linkish { color: inherit; font-weight: 600; }
 .about { max-width: 780px; gap: 14px; }
@@ -135,7 +134,9 @@ code { font-family: var(--font-mono); font-size: .92em; }
 .about .warn h3 { color: inherit; }
 .about .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
-/* Drop zone */
+/* Drop zones: SerolyzeR outputs and metadata side by side */
+.drops { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 12px; }
+.drops-note { color: var(--ink-2); font-size: 12.5px; margin-top: -8px; }
 .drop {
   display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px;
   padding: 16px 18px;
@@ -144,7 +145,20 @@ code { font-family: var(--font-mono); font-size: .92em; }
   background: var(--surface);
   transition: border-color .15s, background .15s;
 }
-.drop.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.drops.dragging .drop { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.drop.dragover, .drops.dragging .drop.dragover { border-color: var(--accent); background: var(--accent-soft); }
+.drop-step { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+.drop-step .opt { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.drop-meta .drop-text { flex-basis: 200px; }
+.drop.has-file { border-style: solid; }
+.drop-meta.has-file #meta-title { font-family: var(--font-mono); font-weight: 500; font-size: 13.5px; overflow-wrap: anywhere; }
+.rowmap {
+  flex: none; width: 44px; height: 47px; border-radius: 3px;
+  background-color: var(--well);
+  background-image: linear-gradient(to right, transparent 0 13px, var(--surface) 13px 16px, transparent 16px),
+    repeating-linear-gradient(to bottom, transparent 0 5px, var(--surface) 5px 7px);
+}
+.drop.dragover .rowmap { background-color: var(--accent); }
 .platemap {
   flex: none; width: 72px; height: 48px;
   background-image: radial-gradient(circle, var(--well) 2.1px, transparent 2.6px);
@@ -395,6 +409,9 @@ tbody tr:hover { background: var(--accent-soft); }
 .notes { color: var(--muted); font-size: 12.5px; max-width: 90ch; display: flex; flex-direction: column; gap: 4px; }
 .notes b { color: var(--ink-2); font-weight: 600; }
 
+@media (max-width: 900px) {
+  .drops { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 760px) {
   .masthead { grid-template-columns: auto minmax(0, 1fr); }
   .masthead .tagline { grid-column: 1 / -1; grid-row: 2; }
@@ -411,6 +428,7 @@ tbody tr:hover { background: var(--accent-soft); }
   .about-head h2 { font-size: 19px; }
   .about-head p { display: none; }
   .about-hint, .about-arrow { display: none; }
+  .platemap, .rowmap { display: none; }
   input[type="search"] { width: 100%; }
   .toolbar .field { flex: 1 1 140px; }
 }
@@ -445,22 +463,36 @@ tbody tr:hover { background: var(--accent-soft); }
     </div>
   </header>
 
-  <section class="drop" id="drop" aria-label="Load files">
-    <div class="platemap" aria-hidden="true"></div>
-    <div class="drop-text">
-      <strong id="drop-title">Drop SerolyzeR CSV files here</strong>
-      <small>Accepts <code>&lt;plate&gt;_MFI.csv</code> / <code>_RAU</code> / <code>_nMFI</code> per-plate files, <code>merged_&lt;type&gt;…csv</code> tables, or a long table with <code>antigen_label</code> and <code>MFI_Median</code> / <code>RAU</code> / <code>nMFI</code> columns. Add as many files as you like. A metadata CSV (a sample ID column plus variables such as age, sex, site or collection date) is picked up automatically, or add it with Add metadata. A saved seroGlance session (.json) reopens everything as it was.</small>
-      <small class="drop-note">Files are read in your browser and never uploaded. seroGlance does not filter your data, so remove low-quality samples and antigens before loading. <button type="button" class="linkish" data-about>More in About</button></small>
+  <section class="drops" aria-label="Load files">
+    <div class="drop" id="drop" role="group" aria-labelledby="drop-step">
+      <div class="platemap" aria-hidden="true"></div>
+      <div class="drop-text">
+        <span class="drop-step" id="drop-step">1 · SerolyzeR outputs</span>
+        <strong id="drop-title">Drop SerolyzeR CSV files here</strong>
+        <small>Per-plate <code>&lt;plate&gt;_MFI.csv</code> / <code>_RAU</code> / <code>_nMFI</code> files, <code>merged_&lt;type&gt;…csv</code> tables, or a long table with <code>antigen_label</code> and <code>MFI_Median</code> / <code>RAU</code> / <code>nMFI</code> columns. Add as many files as you like. A saved seroGlance session (.json) reopens everything as it was.</small>
+      </div>
+      <div class="drop-actions">
+        <button class="btn primary" id="choose" type="button">Choose files</button>
+        <button class="btn" id="example" type="button" hidden>Show example data</button>
+        <button class="btn" id="clear" type="button">Clear</button>
+        <input class="sr-only" type="file" id="file-input" accept=".csv,.txt,text/csv,.json,application/json" multiple>
+      </div>
     </div>
-    <div class="drop-actions">
-      <button class="btn primary" id="choose" type="button">Choose files</button>
-      <button class="btn" id="choose-meta" type="button">Add metadata</button>
-      <button class="btn" id="example" type="button" hidden>Show example data</button>
-      <button class="btn" id="clear" type="button">Clear</button>
-      <input class="sr-only" type="file" id="file-input" accept=".csv,.txt,text/csv,.json,application/json" multiple>
-      <input class="sr-only" type="file" id="meta-input" accept=".csv,.txt,text/csv">
+    <div class="drop drop-meta" id="drop-meta" role="group" aria-labelledby="meta-step">
+      <div class="rowmap" aria-hidden="true"></div>
+      <div class="drop-text">
+        <span class="drop-step" id="meta-step">2 · Metadata <span class="opt">(optional)</span></span>
+        <strong id="meta-title">Drop a metadata CSV here</strong>
+        <small id="meta-desc">One row per sample: a column of sample IDs plus variables such as age, sex, site or collection date, to compare groups in the By group view.</small>
+      </div>
+      <div class="drop-actions">
+        <button class="btn" id="choose-meta" type="button">Choose file</button>
+        <button class="btn" id="meta-clear" type="button" hidden>Remove</button>
+        <input class="sr-only" type="file" id="meta-input" accept=".csv,.txt,text/csv">
+      </div>
     </div>
   </section>
+  <p class="drops-note">Files are read in your browser and never uploaded. seroGlance does not filter your data, so remove low-quality samples and antigens before loading. <button type="button" class="linkish" data-about>More in About</button></p>
 
   <section class="status" aria-live="polite">
     <div class="chips" id="chips"></div>
@@ -954,13 +986,19 @@ function loadRows(rows, fileName) {
   return { format: plateCol !== -1 ? "merged table" : "per-plate file", types: [type], added, skipped, guessed };
 }
 
+function looksLikeSerolyzeR(rows, name) {
+  const head = (rows[0] || []).map(h => String(h).trim().toLowerCase());
+  return /(^|[_\-. ])(mfi|rau|nmfi)([_\-. ]|$)/i.test(name.replace(/\.[a-z]+$/i, "")) || /^merged_/i.test(name) ||
+    head.includes("antigen_label") || head.includes("mfi_median") || head.includes("analyte");
+}
+
 async function loadFiles(fileList, opts = {}) {
   const isSession = f => /\.json$/i.test(f.name);
   // a saved session replaces everything, so it is read before any CSV dropped with it
   const files = [...fileList].filter(f => f && f.name).sort((a, b) => isSession(b) - isSession(a));
   if (!files.length) return;
   if (state.isExample && !files.some(isSession)) resetData();
-  const title = document.getElementById("drop-title");
+  const title = document.getElementById(opts.meta ? "meta-title" : "drop-title");
   let restoredTab = null;
   for (const [i, f] of files.entries()) {
     title.textContent = `Reading ${f.name} (${i + 1} of ${files.length})…`;
@@ -973,9 +1011,13 @@ async function loadFiles(fileList, opts = {}) {
     if (state.isExample) resetData();
     try {
       const rows = parseCSV(await f.text());
-      if (opts.meta || /meta/i.test(f.name)) {
+      // a SerolyzeR output dropped in the metadata box is loaded as data
+      const asData = opts.meta && looksLikeSerolyzeR(rows, f.name);
+      if (asData) state.notices.push(`${f.name} looks like a SerolyzeR output, so it was loaded with the SerolyzeR files rather than as metadata.`);
+      if ((opts.meta && !asData) || (!opts.meta && /meta/i.test(f.name))) {
         const m = loadMeta(rows, f.name);
-        state.notices.push(m.error ? `${f.name} was not loaded as metadata: it ${m.error}.` : `${f.name} loaded as metadata: ${fmtInt.format(m.rows)} rows, ${m.cols} columns. Use the By group view to plot by its variables.`);
+        if (m.error) state.notices.push(`${f.name} was not loaded as metadata: it ${m.error}.`);
+        else if (!opts.meta) state.notices.push(`${f.name} was loaded as metadata, since its name contains "meta". It now shows in the Metadata box.`);
         continue;
       }
       const res = loadRows(rows, f.name);
@@ -983,7 +1025,7 @@ async function loadFiles(fileList, opts = {}) {
         const m = loadMeta(rows, f.name);
         if (!m.error) {
           const why = res.textCols ? `has text columns (${res.textCols.slice(0, 3).join(", ")}${res.textCols.length > 3 ? "…" : ""}) rather than antigen values` : "has no antigen columns";
-          state.notices.push(`${f.name} ${why}, so it was loaded as metadata (${fmtInt.format(m.rows)} rows). Use the By group view to plot by its variables.`);
+          state.notices.push(`${f.name} ${why}, so it was loaded as metadata (${fmtInt.format(m.rows)} rows). It now shows in the Metadata box.`);
           continue;
         }
       }
@@ -997,7 +1039,6 @@ async function loadFiles(fileList, opts = {}) {
     }
   }
   state.dataVersion++;
-  title.textContent = state.files.length ? "Drop more SerolyzeR CSV files here" : "Drop SerolyzeR CSV files here";
   const available = TYPES.filter(t => state.data[t].size);
   if (available.length && !available.includes(state.ui.type)) state.ui.type = available[0];
   refresh();
@@ -1971,7 +2012,7 @@ function renderNotices(view) {
   if (state.isExample) {
     const n = document.createElement("span");
     const link = (text, which) => { const b = document.createElement("button"); b.type = "button"; b.className = "linkish"; b.dataset.download = which; b.textContent = text; return b; };
-    n.append("You're looking at simulated example data. Drop your SerolyzeR files above to replace it. To see the file format, download the example ",
+    n.append("You're looking at simulated example data. Drop your SerolyzeR files in the box above to replace it. To see the file format, download the example ",
       link("merged MFI table", "merged"), " and ", link("metadata", "meta"), ".");
     items.unshift(n);
   }
@@ -2199,6 +2240,7 @@ const ABOUT_HTML = `
 </section>
 <section>
   <h3>Files it reads</h3>
+  <p>Drop these in the <b>SerolyzeR outputs</b> box (or anywhere on the page outside the Metadata box), or use Choose files:</p>
   <ul>
     <li>Per-plate files from <code>process_plate()</code>: <code>&lt;plate&gt;_MFI.csv</code>, <code>_RAU.csv</code>, <code>_nMFI.csv</code>.</li>
     <li>Merged tables from <code>merge_plate_outputs()</code>: <code>merged_&lt;type&gt;…csv</code>.</li>
@@ -2208,11 +2250,11 @@ const ABOUT_HTML = `
 </section>
 <section>
   <h3>Metadata (optional)</h3>
-  <p>A CSV with one row per sample: a column of sample IDs that match the sample names in your files (any column name; matching ignores case and SerolyzeR's <code>.1</code> suffix), plus variables to compare. Text columns are used as groups, number columns such as age are cut into groups at cut-offs you can edit, and dates are grouped by month or year. It is picked up automatically if its name contains "meta" or it is mostly text; otherwise use Add metadata.</p>
+  <p>A CSV with one row per sample: a column of sample IDs that match the sample names in your files (any column name; matching ignores case and SerolyzeR's <code>.1</code> suffix), plus variables to compare. Text columns are used as groups, number columns such as age are cut into groups at cut-offs you can edit, and dates are grouped by month or year. Drop it in the Metadata box, or use Choose file there. A metadata file dropped with the SerolyzeR files is also recognised if its name contains "meta" or it is mostly text.</p>
 </section>
 <section>
   <h3>Example files</h3>
-  <p>The simulated data shown when the page opens (7 plates, 12 antigens), written out in SerolyzeR's merged format, with matching metadata. Load both to try every view.</p>
+  <p>The simulated data shown when the page opens (7 plates, 12 antigens), written out in SerolyzeR's merged format, with matching metadata. Drop the MFI table in the SerolyzeR box and the metadata in the Metadata box to try every view.</p>
   <div class="row">
     <button class="btn small" type="button" data-download="merged">Download merged MFI table</button>
     <button class="btn small" type="button" data-download="meta">Download metadata</button>
@@ -3317,7 +3359,36 @@ function renderMetaBar(model) {
   } else if (!state.files.length) match.textContent = "Add SerolyzeR files to plot by these variables.";
   bar.append(f, n, lab, match);
   addBtn("Replace", "meta-replace", () => document.getElementById("meta-input").click());
-  addBtn("Remove", "meta-remove", () => { state.meta = null; renderBox(); renderChips(state.view); });
+  addBtn("Remove", "meta-remove", removeMeta);
+}
+function removeMeta() { state.meta = null; refresh(); }
+
+// The two drop boxes say what they hold
+function metaMatch() {
+  const M = state.meta, t = state.data[state.ui.type].size ? state.ui.type : TYPES.find(x => state.data[x].size);
+  if (!M || !t || !state.files.length) return null;
+  const k2r = keyToRows(t), isTest = new Uint8Array(k2r.length);
+  state.data[t].forEach(rec => { for (let i = 0; i < rec.r.length; i++) if (rec.r[i] >= 0 && rec.k[i] === KIND.test) isTest[rec.r[i]] = 1; });
+  let n = 0, m = 0;
+  for (let r = 0; r < k2r.length; r++) if (isTest[r]) { n++; if (k2r[r] >= 0) m++; }
+  return { n, m };
+}
+function renderDropStatus() {
+  const has = state.files.length > 0;
+  document.getElementById("drop").classList.toggle("has-file", has);
+  document.getElementById("drop-title").textContent = state.isExample ? "Simulated example data: drop your SerolyzeR CSV files here"
+    : has ? `${fmtInt.format(state.files.length)} file${state.files.length > 1 ? "s" : ""} loaded · drop more SerolyzeR CSV files here` : "Drop SerolyzeR CSV files here";
+  const M = state.meta, box = document.getElementById("drop-meta");
+  box.classList.toggle("has-file", !!M);
+  document.getElementById("meta-title").textContent = M ? M.file : "Drop a metadata CSV here";
+  const desc = document.getElementById("meta-desc");
+  if (M) {
+    const mm = metaMatch();
+    desc.textContent = `${fmtInt.format(M.rows.length)} rows · ${M.header.length} columns · sample IDs from ${M.header[M.idCol]}` +
+      (mm ? ` · ${fmtInt.format(mm.m)} of ${fmtInt.format(mm.n)} samples matched` : "") + ". Drop another file to replace it.";
+  } else desc.textContent = "One row per sample: a column of sample IDs plus variables such as age, sex, site or collection date, to compare groups in the By group view.";
+  document.getElementById("choose-meta").textContent = M ? "Replace" : "Choose file";
+  document.getElementById("meta-clear").hidden = !M;
 }
 
 // Warning when the smallest groups are combined as "Other", with a button to show them all
@@ -3502,6 +3573,7 @@ function renderBox() {
   const M = state.meta;
   if (M && !M.idManual && M.guessedAt !== state.dataVersion) { M.guessedAt = state.dataVersion; setIdCol(M, guessIdCol(M)); }
   renderBoxControls(null);
+  renderDropStatus();
   if (state.tab !== "box") { renderMetaBar(null); return; }
   const model = state.boxModel = buildBox();
   hideTip();
@@ -3790,15 +3862,31 @@ document.getElementById("search").addEventListener("input", e => {
 const input = document.getElementById("file-input");
 document.getElementById("choose").addEventListener("click", () => input.click());
 input.addEventListener("change", () => { loadFiles(input.files).then(() => { input.value = ""; }); });
-document.getElementById("clear").addEventListener("click", () => { resetData(); refresh(); });
+document.getElementById("clear").addEventListener("click", () => {
+  const keep = state.isExample ? null : state.meta;   // Clear empties the SerolyzeR box; the metadata box has its own Remove
+  resetData();
+  if (keep) { keep.guessedAt = -1; keep._k2r = null; state.meta = keep; }
+  refresh();
+});
+document.getElementById("meta-clear").addEventListener("click", removeMeta);
 document.getElementById("example").addEventListener("click", () => { makeExample(); refresh(); });
 
-const drop = document.getElementById("drop");
-["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("dragover"); }));
-["dragleave", "dragend"].forEach(ev => document.addEventListener(ev, e => { if (!e.relatedTarget) drop.classList.remove("dragover"); }));
+// Files dropped on the metadata box are read as metadata; anywhere else, as SerolyzeR files
+const drops = document.querySelector(".drops"), drop = document.getElementById("drop"), dropMeta = document.getElementById("drop-meta");
+const dropTarget = e => (e.target instanceof Element && e.target.closest("#drop-meta")) ? dropMeta : drop;
+const endDrag = () => { drops.classList.remove("dragging"); drop.classList.remove("dragover"); dropMeta.classList.remove("dragover"); };
+["dragenter", "dragover"].forEach(ev => document.addEventListener(ev, e => {
+  e.preventDefault();
+  const t = dropTarget(e);
+  drops.classList.add("dragging");
+  drop.classList.toggle("dragover", t === drop); dropMeta.classList.toggle("dragover", t === dropMeta);
+}));
+["dragleave", "dragend"].forEach(ev => document.addEventListener(ev, e => { if (!e.relatedTarget) endDrag(); }));
 document.addEventListener("drop", e => {
-  e.preventDefault(); drop.classList.remove("dragover");
-  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
+  e.preventDefault();
+  const t = dropTarget(e);
+  endDrag();
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) loadFiles(e.dataTransfer.files, { meta: t === dropMeta });
 });
 
 // redraw the matrix when its width or the theme changes
