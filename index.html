@@ -515,6 +515,14 @@ tbody tr:hover { background: var(--accent-soft); }
         <button type="button" id="scale-linear" data-scale="linear" aria-pressed="false">Linear</button>
       </div>
     </div>
+    <div class="field" id="unit-field">
+      <span>Log values as</span>
+      <div class="seg" id="unit-seg" role="group" aria-label="Log values shown as">
+        <button type="button" id="unit-raw" data-unit="raw" aria-pressed="true">MFI</button>
+        <button type="button" id="unit-log10" data-unit="log10" aria-pressed="false">log₁₀</button>
+        <button type="button" id="unit-ln" data-unit="ln" aria-pressed="false">ln</button>
+      </div>
+    </div>
     <label class="check"><input type="checkbox" id="include-all"> Include standards, blanks, controls and empty wells</label>
     <label class="check" id="snap-wrap" hidden><input type="checkbox" id="snap-div"> <span id="snap-label">Divide SNAP antigens by CTRL_SNAP</span></label>
     <p class="value-def" id="value-def" aria-live="polite"></p>
@@ -774,7 +782,7 @@ const state = {
   notices: [],
   isExample: false,
   tab: "dist",
-  ui: { type: "MFI", group: "pooled", scale: "log", axis: "shared", includeAll: false, snap: false, sort: "file", query: "" },
+  ui: { type: "MFI", group: "pooled", scale: "log", axis: "shared", includeAll: false, snap: false, logUnit: "raw", sort: "file", query: "" },
   corr: { selected: new Set(), touched: false, method: "spearman", showDensity: true, showScatter: true, colorPlate: false, hlPlate: null, title: "", filter: "", note: "" },
   heat: { selected: new Set(), touched: false, title: "", filter: "", note: "", width: "fit", norm: "none" },
   box: { plot: "box", filters: [], showAll: new Set(), var1: null, var2: "", breaks: {}, dateUnit: "month", includeMissing: false, selected: new Set(), touched: false, title: "", filter: "", note: "" },
@@ -1067,7 +1075,7 @@ function sessionPayload() {
     meta: M ? { file: M.file, header: M.header, rows: M.rows, idCol: M.idCol, idManual: M.idManual } : null,
     settings: {
       tab: state.tab,
-      ui: { type: state.ui.type, scale: state.ui.scale, group: state.ui.group, axis: state.ui.axis, sort: state.ui.sort, query: state.ui.query, includeAll: state.ui.includeAll, snap: state.ui.snap },
+      ui: { type: state.ui.type, scale: state.ui.scale, group: state.ui.group, axis: state.ui.axis, sort: state.ui.sort, query: state.ui.query, includeAll: state.ui.includeAll, snap: state.ui.snap, logUnit: state.ui.logUnit },
       corr: { selected: [...c.selected], touched: c.touched, method: c.method, showDensity: c.showDensity, showScatter: c.showScatter, colorPlate: c.colorPlate, hlPlate: c.hlPlate, title: c.title },
       heat: { selected: [...h.selected], touched: h.touched, title: h.title, width: h.width, norm: h.norm },
       box: { plot: b.plot, var1: b.var1, var2: b.var2, breaks: b.breaks, dateUnit: b.dateUnit, includeMissing: b.includeMissing,
@@ -1153,7 +1161,7 @@ async function restoreSession(text, fileName) {
   Object.assign(state.ui, {
     type: pick(ui.type, TYPES, state.ui.type), scale: pick(ui.scale, ["log", "linear"], state.ui.scale),
     group: pick(ui.group, ["pooled", "plate"], state.ui.group), axis: pick(ui.axis, ["shared", "own"], state.ui.axis),
-    sort: pick(ui.sort, ["file", "az", "median"], state.ui.sort), query: str(ui.query), includeAll: !!ui.includeAll, snap: !!ui.snap });
+    sort: pick(ui.sort, ["file", "az", "median"], state.ui.sort), query: str(ui.query), includeAll: !!ui.includeAll, snap: !!ui.snap, logUnit: pick(ui.logUnit, ["raw", "log10", "ln"], "raw") });
   const c = st.corr || {};
   Object.assign(state.corr, { selected: antigenSet(c.selected), touched: !!c.touched, method: pick(c.method, ["spearman", "pearson"], "spearman"),
     showDensity: c.showDensity !== false, showScatter: c.showScatter !== false, colorPlate: !!c.colorPlate,
@@ -1619,7 +1627,7 @@ async function exportFigure(btn, format, regions, header, name) {
 
 // what each view exports
 function viewExport(view, btn, format) {
-  const t = fileType(state.ui.type), scale = state.ui.scale === "log" ? "log scale" : "linear scale";
+  const t = fileType(state.ui.type), scale = state.ui.scale === "log" ? ({ raw: "log scale", log10: "log₁₀ values", ln: "natural-log (ln) values" })[logUnit()] : "linear scale";
   const $ = id => document.getElementById(id);
   if (view === "dist") {
     const sub = [`${state.isExample ? "Simulated example data" : `${fmtInt.format(state.plates.length)} plates`}`,
@@ -1885,8 +1893,23 @@ function fmtTick(v) {
   return Number(v.toPrecision(1)).toString();
 }
 function fmtR(r) { return Number.isFinite(r) ? r.toFixed(2).replace("-", "−") : "–"; }
+// On the Log scale, values can be read in the original units, as log10 or as natural log (ln).
+// The plots are the same either way (ln x = 2.303 × log10 x); only the numbers change.
+function logUnit() { return state.ui.scale === "log" ? state.ui.logUnit : "raw"; }
+function toUnit(v) { const u = logUnit(); return u === "raw" ? v : !(v > 0) ? NaN : u === "ln" ? Math.log(v) : log10(v); }
+function fv(v) { const u = logUnit(); if (u === "raw") return fmt(v); const x = toUnit(v); return Number.isFinite(x) ? x.toFixed(2) : "–"; }
+function unitText(a, t) {
+  const base = a == null ? t : valUnit(a, t), u = logUnit(), b = base.includes(" ") ? `(${base})` : base;
+  return u === "log10" ? `log₁₀ ${b}` : u === "ln" ? `ln ${b}` : base;
+}
+function axisTitle(a, t, isLog) { return logUnit() === "raw" ? `${a == null ? t : valUnit(a, t)}${isLog ? " (log scale)" : ""}` : unitText(a, t); }
 function ticks(lo, hi, isLog, maxTicks = 7) {
   let out = [];
+  if (isLog && logUnit() !== "raw") {
+    // positions stay in log10 space; labels are log10 or ln values at round numbers
+    const f = logUnit() === "ln" ? Math.LN10 : 1;
+    return ticks(lo * f, hi * f, false, maxTicks).map(t => ({ pos: t.pos / f, label: t.label }));
+  }
   if (isLog) {
     const a = Math.ceil(lo), b = Math.floor(hi);
     if (b - a >= 1) {
@@ -1930,7 +1953,7 @@ function chartSVG(pnl, W, H, opts = {}) {
     out += `<text x="${x}" y="${m.t + ih + 13}" text-anchor="middle">${t.label}</text>`;
   }
   out += `<line x1="${m.l}" x2="${m.l + iw}" y1="${m.t + ih}" y2="${m.t + ih}"/>`;
-  if (opts.big) out += `<text x="${m.l + iw / 2}" y="${H - 4}" text-anchor="middle">${valUnit(pnl.antigen, state.ui.type)}${state.view.isLog ? " (log scale)" : ""}</text>`;
+  if (opts.big) out += `<text x="${m.l + iw / 2}" y="${H - 4}" text-anchor="middle">${axisTitle(pnl.antigen, state.ui.type, state.view.isLog)}</text>`;
   out += `</g>`;
   const step = (hi - lo) / (GRID_N - 1);
   out += `<g clip-path="url(#${clipId})">`;
@@ -2043,11 +2066,11 @@ function renderGrid(view) {
   for (const pnl of view.panels) {
     const art = document.createElement("article");
     art.className = "panel"; art.tabIndex = 0; art.setAttribute("role", "button");
-    art.setAttribute("aria-label", `${pnl.antigen}: ${pnl.stats.n} samples, median ${fmt(pnl.stats.median)} ${state.ui.type}. Open larger view.`);
+    art.setAttribute("aria-label", `${pnl.antigen}: ${pnl.stats.n} samples, median ${fv(pnl.stats.median)} ${unitText(pnl.antigen, state.ui.type)}. Open larger view.`);
     const hd = document.createElement("header");
     const h = document.createElement("h3"); h.className = "ag"; h.textContent = pnl.antigen; h.title = pnl.antigen;
     const meta = document.createElement("p"); meta.className = "meta";
-    meta.textContent = (isSnapDivided(pnl.antigen) ? `÷ ${snapActive().ctrl} · ` : "") + `n ${fmtInt.format(pnl.stats.n)} · median ${fmt(pnl.stats.median)} · IQR ${fmt(pnl.stats.q1)}–${fmt(pnl.stats.q3)}`;
+    meta.textContent = (isSnapDivided(pnl.antigen) ? `÷ ${snapActive().ctrl} · ` : "") + `n ${fmtInt.format(pnl.stats.n)} · median ${fv(pnl.stats.median)} · IQR ${fv(pnl.stats.q1)}–${fv(pnl.stats.q3)}`;
     hd.append(h, meta);
     const holder = document.createElement("div"); holder.className = "chart";
     const chart = chartSVG(pnl, 300, 130);
@@ -2080,7 +2103,7 @@ function tipRow(style, strong, label) {
   r.append(s, l); tip.appendChild(r);
 }
 function tipContent(pnl, value) {
-  tipStart(`${pnl.antigen} · ${valUnit(pnl.antigen, state.ui.type)} ${fmt(value)}`);
+  tipStart(`${pnl.antigen} · ${unitText(pnl.antigen, state.ui.type)} ${fv(value)}`);
   const plates = pnl.series.filter(s => s.kind === "plate");
   const pooled = pnl.series[pnl.series.length - 1];
   tipRow(seriesStyle(pooled), fmtPct(pctBelow(pooled.sorted, value)), "of samples below · " + pooled.key);
@@ -2149,7 +2172,7 @@ function openDetail(pnl, from) {
   const left = document.createElement("div");
   const h = document.createElement("h2"); h.textContent = pnl.antigen;
   const sub = document.createElement("p"); sub.className = "meta";
-  sub.textContent = `${isSnapDivided(pnl.antigen) ? `MFI ÷ ${snapActive().ctrl}` : state.ui.type} · n ${fmtInt.format(pnl.stats.n)} · median ${fmt(pnl.stats.median)} · IQR ${fmt(pnl.stats.q1)}–${fmt(pnl.stats.q3)}`;
+  sub.textContent = `${unitText(pnl.antigen, state.ui.type)} · n ${fmtInt.format(pnl.stats.n)} · median ${fv(pnl.stats.median)} · IQR ${fv(pnl.stats.q1)}–${fv(pnl.stats.q3)}`;
   left.append(h, sub);
   const close = document.createElement("button"); close.className = "btn"; close.type = "button"; close.id = "detail-close"; close.textContent = "Close";
   close.addEventListener("click", closeDetail);
@@ -2176,9 +2199,9 @@ function openDetail(pnl, from) {
     td0.appendChild(keySVG(seriesStyle(s)));
     td0.appendChild(document.createTextNode(s.key));
     tr.appendChild(td0);
-    const vals = [fmtInt.format(s.stats.n), fmt(s.stats.median), fmt(s.stats.q1), fmt(s.stats.q3), fmt(s.stats.min), fmt(s.stats.max)];
+    const vals = [fmtInt.format(s.stats.n), fv(s.stats.median), fv(s.stats.q1), fv(s.stats.q3), fv(s.stats.min), fv(s.stats.max)];
     for (const v of vals) { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); }
-    tsv.push([s.key, s.stats.n, s.stats.median, s.stats.q1, s.stats.q3, s.stats.min, s.stats.max].join("\t"));
+    tsv.push([s.key, s.stats.n, ...[s.stats.median, s.stats.q1, s.stats.q3, s.stats.min, s.stats.max].map(toUnit)].join("\t"));
     if (s.kind === "plate") {
       const pid = state.plateIndex.get(s.key);
       const path = holder.querySelector(`path[data-plate="${pid}"]`);
@@ -2214,7 +2237,7 @@ const ABOUT_HTML = `
     <li><b>Heatmap:</b> every sample × antigen, on one colour scale for all antigens or rescaled within each antigen (1st to 99th percentile).</li>
     <li><b>By group:</b> boxplots, beeswarms or density ridges by plate, or by one or two variables from a metadata file such as age group, sex, site or collection month.</li>
   </ul>
-  <p>Every view can show MFI, RAU or nMFI, on a log or linear scale. Each figure can be saved as a PNG image or an editable SVG file (Export figure above the plots, or Download PNG / SVG in a panel's larger view), always on a white background.</p>
+  <p>Every view can show MFI, RAU or nMFI, on a log or linear scale. On the log scale, <i>Log values as</i> reads the numbers in the original units (an axis of 1, 10, 100…), as log₁₀ or as natural log (ln), in axes, tooltips, tables and copied tables. The plots themselves look the same, since ln x = 2.303 × log₁₀ x. Each figure can be saved as a PNG image or an editable SVG file (Export figure above the plots, or Download PNG / SVG in a panel's larger view), always on a white background.</p>
 </section>
 <section>
   <h3>MFI, RAU and nMFI</h3>
@@ -2652,7 +2675,7 @@ function renderCorr() {
   document.getElementById("matrix-title").textContent = c.title.trim() || "Selected antigens";
   const titleInput = document.getElementById("corr-title");
   if (document.activeElement !== titleInput) titleInput.value = c.title;
-  const methodName = c.method === "spearman" ? "Spearman correlation" : (model.isLog ? "Pearson correlation of log₁₀ values" : "Pearson correlation");
+  const methodName = c.method === "spearman" ? "Spearman correlation" : (model.isLog ? `Pearson correlation of ${logUnit() === "ln" ? "ln" : "log₁₀"} values` : "Pearson correlation");
   document.getElementById("matrix-sub").textContent = model.k
     ? `${typeText(model.type)}; n = ${fmtInt.format(model.n)} of ${fmtInt.format(model.N)} samples ${model.isLog ? "positive" : "with values"} on all ${model.k} antigen${model.k > 1 ? "s" : ""} shown · ${methodName}`
     : `${model.type}; pick antigens from the list to compare them.`;
@@ -2746,14 +2769,14 @@ mCanvas.addEventListener("pointermove", e => {
   if (i === j) {
     if (!c.showDensity) { tip.hidden = true; return; }
     const v = fx(j, lx / cell);
-    tipStart(`${model.sel[j]} · ${valUnit(model.sel[j], model.type)} ${fmt(v)}`);
+    tipStart(`${model.sel[j]} · ${unitText(model.sel[j], model.type)} ${fv(v)}`);
     tipRow(null, fmtPct(pctBelow(model.sortedRaw[j], v)), "of these samples below");
   } else if (i > j && !c.showScatter) {
     tip.hidden = true; return;
   } else if (i > j && c.showScatter) {
     tipStart(`${model.sel[i]} vs ${model.sel[j]}`);
-    tipRow(null, fmt(fx(j, lx / cell)), model.sel[j]);
-    tipRow(null, fmt(fx(i, 1 - ly / cell)), model.sel[i]);
+    tipRow(null, fv(fx(j, lx / cell)), model.sel[j]);
+    tipRow(null, fv(fx(i, 1 - ly / cell)), model.sel[i]);
     tipRow(null, `r ${fmtR(model.r[i][j])}`, rTxt);
     // nearest point within 6 px: which plate and sample it is
     const sc = (jj, v) => { const [lo, hi] = model.domains[jj]; return (v - lo) / (hi - lo) * cell; };
@@ -2940,19 +2963,19 @@ function renderHeat() {
   document.getElementById("hm-heading").textContent = h.title.trim() || (h.selected.size === all ? "All antigens" : "Selected antigens");
   const titleInput = document.getElementById("hm-title");
   if (document.activeElement !== titleInput) titleInput.value = h.title;
-  const lg = `${state.ui.scale === "log" ? "log₁₀ " : ""}${state.ui.type}`;
+  const lg = logUnit() === "raw" ? `${state.ui.scale === "log" ? "log₁₀ " : ""}${state.ui.type}` : unitText(null, state.ui.type);
   document.getElementById("hm-legend-label").textContent = h.norm === "none" ? `${lg}, same scale for all antigens` : `${lg}, within antigen`;
   document.getElementById("hm-lo").textContent = "low"; document.getElementById("hm-hi").textContent = "high";
   if (state.tab !== "heat") { state.heatModel = null; return; }
   const model = state.heatModel = buildHeat();
   if (model.norm === "none" && Number.isFinite(model.glo)) {
     const back = t => model.isLog ? Math.pow(10, t) : t;
-    document.getElementById("hm-lo").textContent = "≤ " + fmt(back(model.glo));
-    document.getElementById("hm-hi").textContent = "≥ " + fmt(back(model.ghi));
+    document.getElementById("hm-lo").textContent = "≤ " + fv(back(model.glo));
+    document.getElementById("hm-hi").textContent = "≥ " + fv(back(model.ghi));
   }
   const colourTxt = model.norm === "none"
-    ? `${model.isLog ? "log₁₀ " : ""}${model.type} on one scale for all antigens (1st to 99th percentile of all values shown), so colours compare antigens with each other`
-    : `${model.isLog ? "log₁₀ " : ""}${model.type} rescaled within each antigen (1st to 99th percentile across all samples)`;
+    ? `${model.isLog ? (logUnit() === "ln" ? "ln " : "log₁₀ ") : ""}${model.type} on one scale for all antigens (1st to 99th percentile of all values shown), so colours compare antigens with each other`
+    : `${model.isLog ? (logUnit() === "ln" ? "ln " : "log₁₀ ") : ""}${model.type} rescaled within each antigen (1st to 99th percentile across all samples)`;
   document.getElementById("hm-sub").textContent = model.rows.length
     ? `${fmtInt.format(model.nC)} samples × ${model.rows.length} antigens${snapActive() ? `, SNAP antigens ÷ ${snapActive().ctrl}` : ""}. Each column is one sample, in the order of the loaded files. Colour: ${colourTxt}; grey = not measured.` +
       (model.norm === "none" && model.rows.some(r => isSnapDivided(r.antigen)) && model.rows.some(r => !isSnapDivided(r.antigen)) ? " The SNAP antigens are ratios, on a different scale from the MFI of the other antigens: compare them with each other, or switch to Normalize by antigen." : "")
@@ -2975,7 +2998,7 @@ hCanvas.addEventListener("pointermove", e => {
   if (Number.isNaN(t)) tipRow(null, "not measured", "");
   else {
     const value = model.isLog ? (t === -Infinity ? 0 : Math.pow(10, t)) : t;
-    tipRow(null, (t === -Infinity ? "≤ 0" : fmt(value)) + " " + valUnit(model.rows[i].antigen, model.type), "");
+    tipRow(null, (t === -Infinity ? "≤ 0" : fv(value)) + " " + unitText(model.rows[i].antigen, model.type), "");
     const u = g.hi > g.lo ? Math.max(0, Math.min(1, (t - g.lo) / (g.hi - g.lo))) : 0.5;
     tipRow(null, Math.round(u * 100) + "%", "of the way from this antigen's 1st to 99th percentile");
   }
@@ -3220,7 +3243,7 @@ function boxSVG(model, pnl, W, big, swarm) {
     out += `<rect class="hit" data-b="${bi}" x="${(cx - Math.max(bw, 12) / 2 - 2).toFixed(1)}" y="${m.t}" width="${(Math.max(bw, 12) + 4).toFixed(1)}" height="${ih}" fill="transparent"/>`;
   });
   out += `</g>`;
-  if (big) out += `<g class="axis"><text x="14" y="${m.t + ih / 2}" text-anchor="middle" transform="rotate(-90 14 ${m.t + ih / 2})">${valUnit(pnl.antigen, model.type)}${model.isLog ? " (log scale)" : ""}</text></g>`;
+  if (big) out += `<g class="axis"><text x="14" y="${m.t + ih / 2}" text-anchor="middle" transform="rotate(-90 14 ${m.t + ih / 2})">${axisTitle(pnl.antigen, model.type, model.isLog)}</text></g>`;
   out += `</svg>`;
   return out;
 }
@@ -3284,7 +3307,7 @@ function ridgeSVG(model, pnl, W, big) {
     const txt = escapeXML(l.label.length > 28 ? l.label.slice(0, 27) + "…" : l.label);
     out += `<text x="${m.l - 6}" y="${(yb - Math.min(rh * 0.3, 7)).toFixed(1)}" text-anchor="end">${txt}</text>`;
   });
-  if (big) out += `<text x="${m.l + iw / 2}" y="${H - 6}" text-anchor="middle">${valUnit(pnl.antigen, model.type)}${model.isLog ? " (log scale)" : ""}</text>`;
+  if (big) out += `<text x="${m.l + iw / 2}" y="${H - 6}" text-anchor="middle">${axisTitle(pnl.antigen, model.type, model.isLog)}</text>`;
   out += `</g><g clip-path="url(#${clipId})">`;
   const fillOp = model.nB > 1 ? 0.06 : 0.25;
   pnl.boxes.forEach((b, bi) => {
@@ -3316,15 +3339,15 @@ function attachBoxHover(svg, model, pnl) {
       const li = +hit.dataset.l, bs = pnl.boxes.filter(x => x.i1 === li);
       tipStart(`${pnl.antigen} · ${model.levels1[li].label}`);
       if (!bs.length) tipRow(null, "no values", "");
-      for (const x of bs) tipRow(x.g2 ? { color: x.g2.color, width: 3 } : null, fmt(back(x.stats.med)),
+      for (const x of bs) tipRow(x.g2 ? { color: x.g2.color, width: 3 } : null, fv(back(x.stats.med)),
         `median${x.g2 ? " · " + x.g2.label : ""} · n ${fmtInt.format(x.stats.n)}`);
       placeTip(e.clientX, e.clientY);
       return;
     }
     const b = pnl.boxes[+hit.dataset.b];
     tipStart(`${pnl.antigen} · ${b.g1.label}${b.g2 ? " · " + b.g2.label : ""}`);
-    tipRow(null, fmt(back(b.stats.med)), `median ${valUnit(pnl.antigen, model.type)}`);
-    tipRow(null, `${fmt(back(b.stats.q1))}–${fmt(back(b.stats.q3))}`, "interquartile range");
+    tipRow(null, fv(back(b.stats.med)), `median ${unitText(pnl.antigen, model.type)}`);
+    tipRow(null, `${fv(back(b.stats.q1))}–${fv(back(b.stats.q3))}`, "interquartile range");
     tipRow(null, fmtInt.format(b.stats.n), b.stats.n === 1 ? "sample" : "samples");
     placeTip(e.clientX, e.clientY);
   });
@@ -3587,7 +3610,7 @@ function renderBox() {
   if (model.status === "nodata") { sub.textContent = ""; boxEmpty("Metadata loaded. Add SerolyzeR files to plot their values by these variables.", false); return; }
   if (model.status === "novar") { sub.textContent = ""; boxEmpty("The metadata has no column that can be used as a group. Check the Sample ID column above.", false); return; }
   const matched = model.nSamples - model.nFiltered - model.nUnmatched;
-  sub.textContent = `${typeText(model.type)}${model.isLog ? " (log scale)" : ""} by ${model.v1.name}${model.v2 ? " and " + model.v2.name : ""} · ${fmtInt.format(model.nUsed)} of ${fmtInt.format(model.nSamples)} samples plotted` +
+  sub.textContent = `${typeText(model.type)}${model.isLog ? (logUnit() === "raw" ? " (log scale)" : logUnit() === "ln" ? " (ln values)" : " (log₁₀ values)") : ""} by ${model.v1.name}${model.v2 ? " and " + model.v2.name : ""} · ${fmtInt.format(model.nUsed)} of ${fmtInt.format(model.nSamples)} samples plotted` +
     (model.nFiltered ? ` · ${fmtInt.format(model.nFiltered)} filtered out` : "") +
     model.filters.filter(f => f.keep.size).map(f => {
       const labs = f.levels.filter(L => f.keep.has(L.key)).map(L => L.label);
@@ -3652,11 +3675,11 @@ function openBoxDetail(model, pnl, from) {
   const tsv = [cols.join("\t")];
   for (const b of pnl.boxes) {
     const st = b.stats;
-    const vals = [b.g1.label, ...(model.v2 ? [b.g2.label] : []), fmtInt.format(st.n), fmt(back(st.med)), fmt(back(st.q1)), fmt(back(st.q3)), fmt(back(st.min)), fmt(back(st.max))];
+    const vals = [b.g1.label, ...(model.v2 ? [b.g2.label] : []), fmtInt.format(st.n), fv(back(st.med)), fv(back(st.q1)), fv(back(st.q3)), fv(back(st.min)), fv(back(st.max))];
     const tr = document.createElement("tr");
     for (const v of vals) { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); }
     tbody.appendChild(tr);
-    tsv.push([b.g1.label, ...(model.v2 ? [b.g2.label] : []), st.n, back(st.med), back(st.q1), back(st.q3), back(st.min), back(st.max)].join("\t"));
+    tsv.push([b.g1.label, ...(model.v2 ? [b.g2.label] : []), st.n, ...[st.med, st.q1, st.q3, st.min, st.max].map(x => toUnit(back(x)))].join("\t"));
   }
   table.appendChild(tbody); wrap.appendChild(table);
   const foot = document.createElement("div"); foot.className = "detail-foot";
@@ -3683,6 +3706,9 @@ function syncControls() {
   renderValueDef();
   const press = (id, on) => document.getElementById(id).setAttribute("aria-pressed", String(on));
   press("scale-log", ui.scale === "log"); press("scale-linear", ui.scale === "linear");
+  for (const u of ["raw", "log10", "ln"]) { const b = document.getElementById("unit-" + u); b.setAttribute("aria-pressed", String(ui.logUnit === u)); b.disabled = ui.scale !== "log"; }
+  document.getElementById("unit-raw").textContent = ui.type;
+  document.getElementById("unit-field").title = ui.scale === "log" ? "Read values on the log scale in the original units, as log₁₀ or as natural log (ln). The plots look the same; only the numbers change." : "Applies to the Log scale.";
   press("axis-shared", ui.axis === "shared"); press("axis-own", ui.axis === "own");
   press("group-pooled", ui.group === "pooled"); press("group-plate", ui.group === "plate");
   press("method-spearman", c.method === "spearman"); press("method-pearson", c.method === "pearson");
@@ -3716,7 +3742,7 @@ function syncControls() {
 
 function savePrefs() {
   try {
-    localStorage.setItem("seroglance-ui-v2", JSON.stringify({ heatWidth: state.heat.width, heatNorm: state.heat.norm, boxPlot: state.box.plot, group: state.ui.group, scale: state.ui.scale, axis: state.ui.axis, sort: state.ui.sort, snap: state.ui.snap,
+    localStorage.setItem("seroglance-ui-v2", JSON.stringify({ heatWidth: state.heat.width, heatNorm: state.heat.norm, boxPlot: state.box.plot, group: state.ui.group, scale: state.ui.scale, axis: state.ui.axis, sort: state.ui.sort, snap: state.ui.snap, logUnit: state.ui.logUnit,
       method: state.corr.method, showDensity: state.corr.showDensity, showScatter: state.corr.showScatter, colorPlate: state.corr.colorPlate }));
   } catch (e) { /* storage unavailable */ }
 }
@@ -3801,6 +3827,7 @@ document.getElementById("type-seg").addEventListener("click", e => {
   state.ui.type = b.dataset.type; refresh();
 });
 document.querySelectorAll("button[data-scale]").forEach(b => b.addEventListener("click", () => { state.ui.scale = b.dataset.scale; refresh(); }));
+document.querySelectorAll("button[data-unit]").forEach(b => b.addEventListener("click", () => { state.ui.logUnit = b.dataset.unit; refresh(); }));
 document.querySelectorAll("button[data-axis]").forEach(b => b.addEventListener("click", () => { state.ui.axis = b.dataset.axis; refresh(); }));
 document.querySelectorAll("button[data-group]").forEach(b => b.addEventListener("click", () => { state.ui.group = b.dataset.group; refresh(); }));
 document.querySelectorAll("button[data-method]").forEach(b => b.addEventListener("click", () => { state.corr.method = b.dataset.method; refreshCorr(); }));
@@ -3908,6 +3935,7 @@ try {
     if (["shared", "own"].includes(saved.axis)) state.ui.axis = saved.axis;
     if (["file", "az", "median"].includes(saved.sort)) state.ui.sort = saved.sort;
     if (typeof saved.snap === "boolean") state.ui.snap = saved.snap;
+    if (["raw", "log10", "ln"].includes(saved.logUnit)) state.ui.logUnit = saved.logUnit;
     if (["spearman", "pearson"].includes(saved.method)) state.corr.method = saved.method;
     if (typeof saved.showDensity === "boolean") state.corr.showDensity = saved.showDensity;
     if (typeof saved.showScatter === "boolean") state.corr.showScatter = saved.showScatter;
